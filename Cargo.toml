@@ -24,6 +24,36 @@ name = "cacaview"
 path = "src/bin/cacaview.rs"
 required-features = ["import"]
 
+[[bin]]
+name = "cacafire"
+path = "src/bin/cacafire.rs"
+required-features = ["std"]
+
+[[bin]]
+name = "cacaclock"
+path = "src/bin/cacaclock.rs"
+required-features = ["std"]
+
+[[bin]]
+name = "cacademo"
+path = "src/bin/cacademo.rs"
+required-features = ["std"]
+
+[[bin]]
+name = "cacadraw"
+path = "src/bin/cacadraw.rs"
+required-features = ["std"]
+
+[[bin]]
+name = "cacaplay"
+path = "src/bin/cacaplay.rs"
+required-features = ["std"]
+
+[[bin]]
+name = "cacaserver"
+path = "src/bin/cacaserver.rs"
+required-features = ["std"]
+
 [features]
 default = ["std"]
 # `std` enables the OS-interactive layer: display drivers (terminal, win32),
@@ -69,6 +99,9 @@ glow = { version = "0.18", optional = true }
 raw-window-handle = { version = "0.6", optional = true }
 image = { version = "0.25", optional = true }
 flate2 = { version = "1", optional = true, default-features = false, features = ["rust_backend"] }
+# Declared globally (not just unix) so binaries can use `localtime` and
+# ignore `SIGPIPE` on every platform where `std` is on.
+libc = { version = "0.2", optional = true }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = { version = "0.6", optional = true }
@@ -76,7 +109,6 @@ objc2-foundation = { version = "0.3", optional = true }
 objc2-app-kit = { version = "0.3", optional = true }
 
 [target.'cfg(unix)'.dependencies]
-libc = { version = "0.2", optional = true }
 x11rb = { version = "0.13", optional = true, features = ["xfixes"] }
 
 [target.'cfg(windows)'.dependencies]
@@ -187,6 +219,10 @@ required-features = ["std"]
 [[example]]
 name = "conio-snake"
 path = "examples/conio_snake.rs"
+required-features = ["std"]
+[[example]]
+name = "conio"
+path = "examples/conio.rs"
 required-features = ["std"]
 [[example]]
 name = "dithering"
