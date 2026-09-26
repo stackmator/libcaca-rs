@@ -108,3 +108,7 @@ required-features = ["std"]
 name = "unicode"
 path = "examples/unicode.rs"
 required-features = ["std"]
+[[example]]
+name = "demo"
+path = "examples/demo.rs"
+required-features = ["std"]
