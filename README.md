@@ -139,7 +139,8 @@ dithering under a moving mask), `mouse` (mouse tracking and buttons),
 (the flagship animated menu: dots, lines, boxes, triangles, ellipses and a
 dithered render), `import` (file viewer), `spritedit` (multi-frame sprite
 round-trip), `input` (Unicode text-entry editor), `swallow` (a multiplexer
-tiling four child `caca` streams), `snake` (the conio snake game) and `gui`
+tiling four child `caca` streams), `snake` (the conio snake game), `connect4`
+(the conio Connect-4 AI) and `gui`
 (the graphical window demo, needs `--features gui`).
 Unit tests live alongside the modules; `tests/canvas_api.rs` ports the C API
 stress test. Set `CACA_DRIVER=null` to run the examples headlessly.

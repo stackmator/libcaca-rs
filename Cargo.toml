@@ -135,6 +135,10 @@ name = "snake"
 path = "examples/snake.rs"
 required-features = ["std"]
 [[example]]
+name = "connect4"
+path = "examples/connect4.rs"
+required-features = ["std"]
+[[example]]
 name = "gui"
 path = "examples/gui.rs"
 required-features = ["gui"]
