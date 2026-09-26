@@ -97,9 +97,11 @@ need an external compression dependency.
 
 Runnable programs live in `examples/`: `hello` (animated terminal demo),
 `transform` (a port of libcaca's sprite/transform demo), `event` (a port of
-the event lister; type "quit" to exit) and `export` (a port of the codec demo
+the event lister; type "quit" to exit), `export` (a port of the codec demo
 that renders the classic showcase canvas and exports it, e.g.
-`export ansi`, `export tga`). Set `CACA_DRIVER=null` to run them headlessly.
+`export ansi`, `export tga`) and `trifiller` (a port of the rotating textured
+square demo; arrows move, `a`/`s` rotate, `q` quits). Set `CACA_DRIVER=null`
+to run them headlessly.
 
 ## License
 
