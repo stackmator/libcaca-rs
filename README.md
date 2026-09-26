@@ -101,8 +101,10 @@ the event lister; type "quit" to exit), `export` (a port of the codec demo
 that renders the classic showcase canvas and exports it, e.g.
 `export ansi`, `export tga`), `trifiller` (a port of the rotating textured
 square demo; arrows move, `a`/`s` rotate, `q` quits), `font2tga` (renders every
-glyph of the built-in font to a TGA image) and `font` (renders text to ARGB
-and dithers it back for display). Set `CACA_DRIVER=null` to run them
+glyph of the built-in font to a TGA image), `font` (renders text to ARGB
+and dithers it back for display), `colors` (the 16x16 colour-pair chart),
+`truecolor` (an ARGB gradient), `text` (mirrored ASCII-art import/export) and
+`blit` (a handle-centred sprite). Set `CACA_DRIVER=null` to run them
 headlessly.
 
 ## License

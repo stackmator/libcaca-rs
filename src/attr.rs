@@ -15,7 +15,7 @@
 //! 4 bits  bold, italics, underline and blink flags
 //! ```
 
-use core::ops::{BitOr, BitOrAssign, BitAnd, BitXor, Not};
+use core::ops::{BitAnd, BitOr, BitOrAssign, BitXor, Not};
 
 /// A `libcaca` colour keyword.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -215,8 +215,11 @@ impl Attr {
         let fg = nearest_ansi(self.fg14());
         let bg = nearest_ansi(self.bg14());
 
-        (if fg < 0x10 { fg } else { Color::LightGray.as_u8() })
-            | ((if bg < 0x10 { bg } else { Color::Black.as_u8() }) << 4)
+        (if fg < 0x10 {
+            fg
+        } else {
+            Color::LightGray.as_u8()
+        }) | ((if bg < 0x10 { bg } else { Color::Black.as_u8() }) << 4)
     }
 
     /// The ANSI foreground value.
@@ -319,16 +322,16 @@ impl Attr {
 /// RGB colours for the ANSI palette (gnome-terminal values).
 pub const fn ansitab16() -> [u16; 16] {
     [
-        0xf000, 0xf00a, 0xf0a0, 0xf0aa, 0xfa00, 0xfa0a, 0xfa50, 0xfaaa, 0xf555, 0xf55f,
-        0xf5f5, 0xf5ff, 0xff55, 0xff5f, 0xfff5, 0xffff,
+        0xf000, 0xf00a, 0xf0a0, 0xf0aa, 0xfa00, 0xfa0a, 0xfa50, 0xfaaa, 0xf555, 0xf55f, 0xf5f5,
+        0xf5ff, 0xff55, 0xff5f, 0xfff5, 0xffff,
     ]
 }
 
 /// Same palette on 14 bits (3-4-4-3).
 pub const fn ansitab14() -> [u16; 16] {
     [
-        0x3800, 0x3805, 0x3850, 0x3855, 0x3d00, 0x3d05, 0x3d28, 0x3d55, 0x3aaa, 0x3aaf,
-        0x3afa, 0x3aff, 0x3faa, 0x3faf, 0x3ffa, 0x3fff,
+        0x3800, 0x3805, 0x3850, 0x3855, 0x3d00, 0x3d05, 0x3d28, 0x3d55, 0x3aaa, 0x3aaf, 0x3afa,
+        0x3aff, 0x3faa, 0x3faf, 0x3ffa, 0x3fff,
     ]
 }
 
@@ -395,7 +398,10 @@ mod tests {
         let a = Attr::from_ansi(Color::LightRed, Color::Blue);
         assert_eq!(a.to_ansi_fg(), Color::LightRed.as_u8());
         assert_eq!(a.to_ansi_bg(), Color::Blue.as_u8());
-        assert_eq!(a.to_ansi(), (Color::Blue.as_u8() << 4) | Color::LightRed.as_u8());
+        assert_eq!(
+            a.to_ansi(),
+            (Color::Blue.as_u8() << 4) | Color::LightRed.as_u8()
+        );
     }
 
     #[test]
@@ -411,7 +417,13 @@ mod tests {
     #[test]
     fn argb_defaults() {
         let a = Attr::from_ansi(Color::Default, Color::Default);
-        assert_eq!(a.to_rgb12_fg(), ansitab16()[Color::LightGray.as_u8() as usize] & 0x0fff);
-        assert_eq!(a.to_rgb12_bg(), ansitab16()[Color::Black.as_u8() as usize] & 0x0fff);
+        assert_eq!(
+            a.to_rgb12_fg(),
+            ansitab16()[Color::LightGray.as_u8() as usize] & 0x0fff
+        );
+        assert_eq!(
+            a.to_rgb12_bg(),
+            ansitab16()[Color::Black.as_u8() as usize] & 0x0fff
+        );
     }
 }

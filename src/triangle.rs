@@ -7,31 +7,14 @@ use crate::canvas::Canvas;
 
 impl Canvas {
     /// Draw a triangle outline using the given character.
-    pub fn draw_triangle(
-        &mut self,
-        x1: i32,
-        y1: i32,
-        x2: i32,
-        y2: i32,
-        x3: i32,
-        y3: i32,
-        ch: u32,
-    ) {
+    pub fn draw_triangle(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, x3: i32, y3: i32, ch: u32) {
         self.draw_line(x1, y1, x2, y2, ch);
         self.draw_line(x2, y2, x3, y3, ch);
         self.draw_line(x3, y3, x1, y1, ch);
     }
 
     /// Draw a thin ASCII-art triangle.
-    pub fn draw_thin_triangle(
-        &mut self,
-        x1: i32,
-        y1: i32,
-        x2: i32,
-        y2: i32,
-        x3: i32,
-        y3: i32,
-    ) {
+    pub fn draw_thin_triangle(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, x3: i32, y3: i32) {
         self.draw_thin_line(x1, y1, x2, y2);
         self.draw_thin_line(x2, y2, x3, y3);
         self.draw_thin_line(x3, y3, x1, y1);
@@ -39,16 +22,7 @@ impl Canvas {
 
     /// Fill a triangle using the given character.
     #[allow(clippy::too_many_arguments)]
-    pub fn fill_triangle(
-        &mut self,
-        x1: i32,
-        y1: i32,
-        x2: i32,
-        y2: i32,
-        x3: i32,
-        y3: i32,
-        ch: u32,
-    ) {
+    pub fn fill_triangle(&mut self, x1: i32, y1: i32, x2: i32, y2: i32, x3: i32, y3: i32, ch: u32) {
         // Bubble-sort y1 <= y2 <= y3.
         if y1 > y2 {
             self.fill_triangle(x2, y2, x1, y1, x3, y3, ch);
@@ -133,15 +107,9 @@ impl Canvas {
 
     /// Fill a triangle using an arbitrary texture, with per-vertex UVs.
     #[allow(clippy::too_many_arguments)]
-    pub fn fill_triangle_textured(
-        &mut self,
-        coords: [i32; 6],
-        tex: &Canvas,
-        uv: [f32; 6],
-    ) {
+    pub fn fill_triangle_textured(&mut self, coords: [i32; 6], tex: &Canvas, uv: [f32; 6]) {
         fill_triangle_textured_l(
-            self,
-            coords[0], coords[1], coords[2], coords[3], coords[4], coords[5], tex, uv[0],
+            self, coords[0], coords[1], coords[2], coords[3], coords[4], coords[5], tex, uv[0],
             uv[1], uv[2], uv[3], uv[4], uv[5],
         );
     }
@@ -166,15 +134,11 @@ fn fill_triangle_textured_l(
 ) {
     // Bubble-sort y1 <= y2 <= y3.
     if y1 > y2 {
-        fill_triangle_textured_l(
-            cv, x2, y2, x1, y1, x3, y3, tex, u2, v2, u1, v1, u3, v3,
-        );
+        fill_triangle_textured_l(cv, x2, y2, x1, y1, x3, y3, tex, u2, v2, u1, v1, u3, v3);
         return;
     }
     if y2 > y3 {
-        fill_triangle_textured_l(
-            cv, x1, y1, x3, y3, x2, y2, tex, u1, v1, u3, v3, u2, v2,
-        );
+        fill_triangle_textured_l(cv, x1, y1, x3, y3, x2, y2, tex, u1, v1, u3, v3, u2, v2);
         return;
     }
 

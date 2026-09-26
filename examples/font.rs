@@ -5,7 +5,7 @@
 //! Press any key to quit when running interactively.
 
 use libcaca::font::{font_list, load_builtin};
-use libcaca::{Canvas, Color, Dither, Display, Driver, EventMask};
+use libcaca::{Canvas, Color, Display, Dither, Driver, EventMask};
 
 fn main() -> libcaca::Result<()> {
     let mut cv = Canvas::new(8, 2)?;

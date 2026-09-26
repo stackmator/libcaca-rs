@@ -152,9 +152,7 @@ pub(super) fn export_svg(cv: &Canvas) -> Vec<u8> {
         h = height * 10
     ));
 
-    out.push_str(
-        " <g id=\"mainlayer\" font-size=\"10\" style=\"font-family: monospace\">\n",
-    );
+    out.push_str(" <g id=\"mainlayer\" font-size=\"10\" style=\"font-family: monospace\">\n");
 
     for y in 0..height {
         for x in 0..width {

@@ -105,9 +105,7 @@ impl Font {
             let stop = rd_u32(data, o + 4);
             let index = rd_u32(data, o + 8);
 
-            if start > stop
-                || (i > 0 && start < block_list[i - 1].stop)
-                || index as usize >= glyphs
+            if start > stop || (i > 0 && start < block_list[i - 1].stop) || index as usize >= glyphs
             {
                 return Err(CacaError::Invalid);
             }
@@ -276,8 +274,8 @@ impl Font {
                         let q = 0xff - p;
                         let px = line + 4 * i as usize;
                         for t in 0..4 {
-                            buf[px + t] = (((q * argb[t] as u32) + (p * argb[4 + t] as u32)) / 0xf)
-                                as u8;
+                            buf[px + t] =
+                                (((q * argb[t] as u32) + (p * argb[4 + t] as u32)) / 0xf) as u8;
                         }
                     }
                 }

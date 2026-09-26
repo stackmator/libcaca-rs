@@ -43,7 +43,10 @@ fn usage(prog: &str) -> ! {
 
 fn main() -> libcaca::Result<()> {
     let argv: Vec<String> = std::env::args().collect();
-    let prog = argv.first().cloned().unwrap_or_else(|| "export".to_string());
+    let prog = argv
+        .first()
+        .cloned()
+        .unwrap_or_else(|| "export".to_string());
 
     let (file, format) = match argv.len() {
         2 => (None, argv[1].clone()),
@@ -85,16 +88,7 @@ fn main() -> libcaca::Result<()> {
 
         // NB: the C demo passes bpp=256 here, which this port correctly
         // rejects; the source image is 256x256 32-bit RGBA.
-        let mut dither = Dither::new(
-            256,
-            256,
-            32,
-            4 * 256,
-            0x00ff0000,
-            0x0000ff00,
-            0x000000ff,
-            0,
-        )?;
+        let mut dither = Dither::new(256, 256, 32, 4 * 256, 0x00ff0000, 0x0000ff00, 0x000000ff, 0)?;
         if format == "ansi" || format == "utf8" {
             dither.set_charset("shades")?;
         }
@@ -105,7 +99,13 @@ fn main() -> libcaca::Result<()> {
         cv.draw_thin_box(0, 0, WIDTH - 1, HEIGHT - 1);
 
         cv.set_color_ansi(Color::Black, Color::White)?;
-        cv.fill_ellipse(cv.width() / 2, HEIGHT / 2, WIDTH / 4, HEIGHT / 4, b' ' as u32);
+        cv.fill_ellipse(
+            cv.width() / 2,
+            HEIGHT / 2,
+            WIDTH / 4,
+            HEIGHT / 4,
+            b' ' as u32,
+        );
 
         cv.set_color_ansi(Color::LightGray, Color::Black)?;
         cv.put_str(WIDTH / 2 - 12, HEIGHT / 2 - 6, "   lightgray on black   ");

@@ -105,7 +105,11 @@ impl Canvas {
     }
 
     fn autodetect_import(&mut self, data: &[u8]) -> Result<usize> {
-        if data.len() >= 4 && data[0] == 0xca && data[1] == 0xca && data[2] == b'C' && data[3] == b'V'
+        if data.len() >= 4
+            && data[0] == 0xca
+            && data[1] == 0xca
+            && data[2] == b'C'
+            && data[3] == b'V'
         {
             return native::import_caca(self, data);
         }

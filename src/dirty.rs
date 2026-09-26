@@ -60,12 +60,7 @@ impl Canvas {
             return Err(CacaError::Invalid);
         }
         let d = self.dirty[r];
-        Ok((
-            d.xmin,
-            d.ymin,
-            d.xmax - d.xmin + 1,
-            d.ymax - d.ymin + 1,
-        ))
+        Ok((d.xmin, d.ymin, d.xmax - d.xmin + 1, d.ymax - d.ymin + 1))
     }
 
     /// Add an area to the dirty rectangle list.

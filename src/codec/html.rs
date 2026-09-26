@@ -42,9 +42,7 @@ pub(super) fn export_html(cv: &Canvas, html5: bool) -> Vec<u8> {
     } else {
         out.push_str("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\"\n");
         out.push_str("   \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">\n");
-        out.push_str(
-            "<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">",
-        );
+        out.push_str("<html xmlns=\"http://www.w3.org/1999/xhtml\" lang=\"en\" xml:lang=\"en\">");
         out.push_str("<head>\n");
     }
 
@@ -184,9 +182,7 @@ pub(super) fn export_html3(cv: &Canvas) -> Vec<u8> {
                 let mut colspan = len;
 
                 for i in 0..len {
-                    if i != 0
-                        && (boundary[((x + i) / 8) as usize] & (1 << ((x + i) % 8))) == 0
-                    {
+                    if i != 0 && (boundary[((x + i) / 8) as usize] & (1 << ((x + i) % 8))) == 0 {
                         colspan -= 1;
                     }
                 }
@@ -231,8 +227,7 @@ pub(super) fn export_html3(cv: &Canvas) -> Vec<u8> {
                 html_char(&mut out, chars[(x + i + y * stride) as usize]);
 
                 if nonblank != 0
-                    && ((i + 1) == len
-                        || attr != attrs[(x + i + 1 + y * stride) as usize])
+                    && ((i + 1) == len || attr != attrs[(x + i + 1 + y * stride) as usize])
                 {
                     if attr & 0x8 != 0 {
                         out.push_str("</blink>");

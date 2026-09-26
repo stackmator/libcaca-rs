@@ -197,15 +197,31 @@ fn draw_thin_line(cv: &mut Canvas, s: &Line) {
     let yinc;
 
     if s.x2 >= s.x1 {
-        charmapx[0] = if s.y1 > s.y2 { b',' as u32 } else { b'`' as u32 };
-        charmapx[1] = if s.y1 > s.y2 { b'\'' as u32 } else { b'.' as u32 };
+        charmapx[0] = if s.y1 > s.y2 {
+            b',' as u32
+        } else {
+            b'`' as u32
+        };
+        charmapx[1] = if s.y1 > s.y2 {
+            b'\'' as u32
+        } else {
+            b'.' as u32
+        };
         x1 = s.x1;
         y1 = s.y1;
         x2 = s.x2;
         y2 = s.y2;
     } else {
-        charmapx[0] = if s.y1 > s.y2 { b'`' as u32 } else { b'.' as u32 };
-        charmapx[1] = if s.y1 > s.y2 { b',' as u32 } else { b'\'' as u32 };
+        charmapx[0] = if s.y1 > s.y2 {
+            b'`' as u32
+        } else {
+            b'.' as u32
+        };
+        charmapx[1] = if s.y1 > s.y2 {
+            b',' as u32
+        } else {
+            b'\'' as u32
+        };
         x1 = s.x2;
         y1 = s.y2;
         x2 = s.x1;

@@ -275,16 +275,8 @@ impl Canvas {
 
         let starti = if x < 0 { -x } else { 0 };
         let startj = if y < 0 { -y } else { 0 };
-        let endi = if x + src_w >= dst_w {
-            dst_w - x
-        } else {
-            src_w
-        };
-        let endj = if y + src_h >= dst_h {
-            dst_h - y
-        } else {
-            src_h
-        };
+        let endi = if x + src_w >= dst_w { dst_w - x } else { src_w };
+        let endj = if y + src_h >= dst_h { dst_h - y } else { src_h };
         let stride = endi - starti;
 
         if starti > src_w || startj > src_h || starti >= endi || startj >= endj {
@@ -305,8 +297,7 @@ impl Canvas {
                     dstf.chars[(dstix - 1) as usize] = b' ' as u32;
                 }
 
-                if endi + x < dst_w
-                    && dstf.chars[(dstix + stride) as usize] == CACA_MAGIC_FULLWIDTH
+                if endi + x < dst_w && dstf.chars[(dstix + stride) as usize] == CACA_MAGIC_FULLWIDTH
                 {
                     dstf.chars[(dstix + stride) as usize] = b' ' as u32;
                 }

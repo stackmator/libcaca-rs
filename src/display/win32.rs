@@ -16,23 +16,23 @@ use windows_sys::Win32::Storage::FileSystem::{
     CreateFileW, FILE_ATTRIBUTE_NORMAL, FILE_SHARE_READ, FILE_SHARE_WRITE, OPEN_EXISTING,
 };
 use windows_sys::Win32::System::Console::{
-    AllocConsole, CreateConsoleScreenBuffer, FreeConsole, GetConsoleCursorInfo,
-    GetConsoleMode, GetConsoleScreenBufferInfo, GetConsoleWindow, GetCurrentConsoleFont,
+    AllocConsole, CreateConsoleScreenBuffer, FreeConsole, GetConsoleCursorInfo, GetConsoleMode,
+    GetConsoleScreenBufferInfo, GetConsoleWindow, GetCurrentConsoleFont,
     GetNumberOfConsoleInputEvents, GetStdHandle, ReadConsoleInputW, SetConsoleActiveScreenBuffer,
     SetConsoleCursorInfo, SetConsoleMode, SetConsoleScreenBufferSize, SetConsoleTitleW,
-    SetConsoleWindowInfo, WriteConsoleOutputW, CHAR_INFO, CHAR_INFO_0, CONSOLE_CURSOR_INFO,
-    CONSOLE_FONT_INFO, CONSOLE_SCREEN_BUFFER_INFO, COORD, ENABLE_MOUSE_INPUT, ENABLE_WINDOW_INPUT,
-    FOREGROUND_BLUE, FOREGROUND_GREEN, FOREGROUND_INTENSITY, FOREGROUND_RED, BACKGROUND_BLUE,
-    BACKGROUND_GREEN, BACKGROUND_INTENSITY, BACKGROUND_RED, CONSOLE_TEXTMODE_BUFFER, INPUT_RECORD,
-    KEY_EVENT, MOUSE_EVENT, MOUSE_HWHEELED, MOUSE_MOVED, MOUSE_WHEELED, STD_INPUT_HANDLE,
-    WINDOW_BUFFER_SIZE_EVENT,
+    SetConsoleWindowInfo, WriteConsoleOutputW, BACKGROUND_BLUE, BACKGROUND_GREEN,
+    BACKGROUND_INTENSITY, BACKGROUND_RED, CHAR_INFO, CHAR_INFO_0, CONSOLE_CURSOR_INFO,
+    CONSOLE_FONT_INFO, CONSOLE_SCREEN_BUFFER_INFO, CONSOLE_TEXTMODE_BUFFER, COORD,
+    ENABLE_MOUSE_INPUT, ENABLE_WINDOW_INPUT, FOREGROUND_BLUE, FOREGROUND_GREEN,
+    FOREGROUND_INTENSITY, FOREGROUND_RED, INPUT_RECORD, KEY_EVENT, MOUSE_EVENT, MOUSE_HWHEELED,
+    MOUSE_MOVED, MOUSE_WHEELED, STD_INPUT_HANDLE, WINDOW_BUFFER_SIZE_EVENT,
 };
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::{
     VK_ADD, VK_DECIMAL, VK_DELETE, VK_DIVIDE, VK_DOWN, VK_END, VK_ESCAPE, VK_F1, VK_F10, VK_F11,
-    VK_F12, VK_F13, VK_F14, VK_F15, VK_F2, VK_F3, VK_F4, VK_F5, VK_F6, VK_F7, VK_F8, VK_F9, VK_HOME,
-    VK_INSERT, VK_LEFT, VK_MULTIPLY, VK_NEXT, VK_NUMPAD0, VK_NUMPAD1, VK_NUMPAD2, VK_NUMPAD3,
-    VK_NUMPAD4, VK_NUMPAD5, VK_NUMPAD6, VK_NUMPAD7, VK_NUMPAD8, VK_NUMPAD9, VK_PRIOR, VK_RETURN,
-    VK_RIGHT, VK_SEPARATOR, VK_SPACE, VK_SUBTRACT, VK_TAB, VK_UP,
+    VK_F12, VK_F13, VK_F14, VK_F15, VK_F2, VK_F3, VK_F4, VK_F5, VK_F6, VK_F7, VK_F8, VK_F9,
+    VK_HOME, VK_INSERT, VK_LEFT, VK_MULTIPLY, VK_NEXT, VK_NUMPAD0, VK_NUMPAD1, VK_NUMPAD2,
+    VK_NUMPAD3, VK_NUMPAD4, VK_NUMPAD5, VK_NUMPAD6, VK_NUMPAD7, VK_NUMPAD8, VK_NUMPAD9, VK_PRIOR,
+    VK_RETURN, VK_RIGHT, VK_SEPARATOR, VK_SPACE, VK_SUBTRACT, VK_TAB, VK_UP,
 };
 
 use crate::attr::Attr;
@@ -201,7 +201,9 @@ impl Win32 {
 
             w.buffer = vec![
                 CHAR_INFO {
-                    Char: CHAR_INFO_0 { UnicodeChar: b' ' as u16 },
+                    Char: CHAR_INFO_0 {
+                        UnicodeChar: b' ' as u16
+                    },
                     Attributes: 0,
                 };
                 (width.max(0) * height.max(0)) as usize
@@ -304,7 +306,9 @@ impl Win32 {
             self.buffer.resize(
                 n,
                 CHAR_INFO {
-                    Char: CHAR_INFO_0 { UnicodeChar: b' ' as u16 },
+                    Char: CHAR_INFO_0 {
+                        UnicodeChar: b' ' as u16,
+                    },
                     Attributes: 0,
                 },
             );
@@ -359,14 +363,21 @@ impl Win32 {
         self.buffer.resize(
             n,
             CHAR_INFO {
-                Char: CHAR_INFO_0 { UnicodeChar: b' ' as u16 },
+                Char: CHAR_INFO_0 {
+                    UnicodeChar: b' ' as u16,
+                },
                 Attributes: 0,
             },
         );
     }
 
     /// Wait for and return the next console event matching `mask`.
-    pub fn get_event(&mut self, canvas: &Canvas, mask: EventMask, timeout_us: i64) -> Option<Event> {
+    pub fn get_event(
+        &mut self,
+        canvas: &Canvas,
+        mask: EventMask,
+        timeout_us: i64,
+    ) -> Option<Event> {
         if mask.bits() == 0 {
             return None;
         }
@@ -428,11 +439,14 @@ impl Win32 {
                         let ascii = if u < 0x80 { u as i32 } else { 0 };
                         key = KeyEvent::new(ascii, u);
                     } else if key.utf32 == 0 {
-                        key = KeyEvent::new(ch, if (0..=0x7f).contains(&ch) && ch > 0 {
-                            ch as u32
-                        } else {
-                            0
-                        });
+                        key = KeyEvent::new(
+                            ch,
+                            if (0..=0x7f).contains(&ch) && ch > 0 {
+                                ch as u32
+                            } else {
+                                0
+                            },
+                        );
                     }
 
                     if down {

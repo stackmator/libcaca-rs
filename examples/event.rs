@@ -13,7 +13,11 @@ fn print_event(cv: &mut Canvas, x: i32, y: i32, ev: &Event) {
         }
         Event::KeyPress(k) => {
             let c = printable(k.ch);
-            cv.printf(x, y, format_args!("CACA_EVENT_KEY_PRESS 0x{:02x} ({})", k.ch, c));
+            cv.printf(
+                x,
+                y,
+                format_args!("CACA_EVENT_KEY_PRESS 0x{:02x} ({})", k.ch, c),
+            );
         }
         Event::KeyRelease(k) => {
             let c = printable(k.ch);

@@ -42,7 +42,10 @@ impl Getopt {
         S: AsRef<str>,
     {
         Getopt {
-            args: args.into_iter().map(|a| a.as_ref().as_bytes().to_vec()).collect(),
+            args: args
+                .into_iter()
+                .map(|a| a.as_ref().as_bytes().to_vec())
+                .collect(),
             optind: 1,
             short_pos: None,
             optarg: None,

@@ -2,9 +2,7 @@
 
 use crate::attr::{Attr, Color};
 use crate::canvas::{Canvas, CACA_MAGIC_FULLWIDTH};
-use crate::charset::{
-    cp437_to_utf32, utf32_is_fullwidth, utf32_to_cp437, utf8_to_utf32,
-};
+use crate::charset::{cp437_to_utf32, utf32_is_fullwidth, utf32_to_cp437, utf8_to_utf32};
 use crate::error::Result;
 
 use super::push_utf8;
@@ -682,9 +680,7 @@ pub(super) fn export_ansi(cv: &Canvas) -> Vec<u8> {
 }
 
 pub(super) fn export_irc(cv: &Canvas) -> Vec<u8> {
-    const PALETTE: [u8; 16] = [
-        1, 2, 3, 10, 5, 6, 7, 15, 14, 12, 9, 11, 4, 13, 8, 0,
-    ];
+    const PALETTE: [u8; 16] = [1, 2, 3, 10, 5, 6, 7, 15, 14, 12, 9, 11, 4, 13, 8, 0];
 
     let frame = cv.active();
     let mut out = Vec::new();

@@ -103,9 +103,7 @@ impl FigFont {
 
         // The signature is `flf2a` or `tlf2a`, immediately followed by the
         // hardblank character.
-        let sig_pos = header
-            .find("lf2a")
-            .ok_or(CacaError::Invalid)?;
+        let sig_pos = header.find("lf2a").ok_or(CacaError::Invalid)?;
         let tokens: Vec<&str> = header.split_whitespace().collect();
         if tokens.is_empty() {
             return Err(CacaError::Invalid);
@@ -117,7 +115,11 @@ impl FigFont {
             "$"
         };
         let (hardblank, _) = utf8_to_utf32(hardblank_str.as_bytes());
-        let hardblank = if hardblank == 0 { b'$' as u32 } else { hardblank };
+        let hardblank = if hardblank == 0 {
+            b'$' as u32
+        } else {
+            hardblank
+        };
 
         let nums: Vec<i64> = tokens[1..]
             .iter()
@@ -142,9 +144,7 @@ impl FigFont {
 
         if !(-1..=63).contains(&old_layout)
             || full_layout > 32767
-            || ((full_layout & 0x80) != 0
-                && (full_layout & 0x3f) == 0
-                && old_layout != 0)
+            || ((full_layout & 0x80) != 0 && (full_layout & 0x3f) == 0 && old_layout != 0)
         {
             return Err(CacaError::Invalid);
         }

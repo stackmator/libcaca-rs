@@ -77,10 +77,10 @@ fn main() -> libcaca::Result<()> {
         let mut rotated = [[0.0f32; 2]; 4];
         for (p, corner) in square.iter().enumerate() {
             let rad = angle * PI / 180.0;
-            rotated[p][0] = corner[0] * rad.cos() - corner[1] * rad.sin() + ww as f32 / 2.0
-                + px as f32;
-            rotated[p][1] = corner[0] * rad.sin() + corner[1] * rad.cos() + wh as f32 / 2.0
-                + py as f32;
+            rotated[p][0] =
+                corner[0] * rad.cos() - corner[1] * rad.sin() + ww as f32 / 2.0 + px as f32;
+            rotated[p][1] =
+                corner[0] * rad.sin() + corner[1] * rad.cos() + wh as f32 / 2.0 + py as f32;
         }
         angle += 1.0;
 
