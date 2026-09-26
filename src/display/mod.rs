@@ -9,6 +9,8 @@
 //! - `terminal` — ANSI/VT terminal driver with raw-mode input
 
 pub mod event;
+#[cfg(feature = "gl")]
+mod gl;
 pub mod render;
 #[cfg(feature = "std")]
 mod terminal;
@@ -42,6 +44,8 @@ use alloc::vec::Vec;
 pub const DRIVER_LIST: &[(&str, &str)] = &[
     #[cfg(feature = "gui")]
     ("winit", "graphical window"),
+    #[cfg(feature = "gl")]
+    ("gl", "OpenGL window"),
     #[cfg(all(feature = "x11", unix))]
     ("x11", "X11 window"),
     #[cfg(windows)]
@@ -63,6 +67,7 @@ pub enum Driver {
     Win32,
     Winit,
     X11,
+    Gl,
 }
 
 #[cfg(feature = "std")]
@@ -75,6 +80,7 @@ impl Driver {
             Driver::Terminal => "terminal",
             Driver::Win32 => "win32",
             Driver::Winit => "winit",
+            Driver::Gl => "gl",
             Driver::X11 => "x11",
         }
     }
@@ -115,6 +121,16 @@ impl Driver {
                     None
                 }
             }
+            "gl" => {
+                #[cfg(feature = "gl")]
+                {
+                    Some(Driver::Gl)
+                }
+                #[cfg(not(feature = "gl"))]
+                {
+                    None
+                }
+            }
             _ => None,
         }
     }
@@ -148,6 +164,8 @@ enum Backend {
     Winit(winit::Winit),
     #[cfg(all(feature = "x11", unix))]
     X11(Box<x11::X11>),
+    #[cfg(feature = "gl")]
+    Gl(gl::Gl),
 }
 
 /// A libcaca display context.
@@ -276,6 +294,8 @@ impl Display {
             Backend::Winit(w) => w.display_width(),
             #[cfg(all(feature = "x11", unix))]
             Backend::X11(w) => w.display_width(),
+            #[cfg(feature = "gl")]
+            Backend::Gl(w) => w.display_width(),
             Backend::Null | Backend::Raw => self.canvas.width(),
         }
     }
@@ -290,6 +310,8 @@ impl Display {
             Backend::Winit(w) => w.display_height(),
             #[cfg(all(feature = "x11", unix))]
             Backend::X11(w) => w.display_height(),
+            #[cfg(feature = "gl")]
+            Backend::Gl(w) => w.display_height(),
             Backend::Null | Backend::Raw => self.canvas.height(),
         }
     }
@@ -313,6 +335,11 @@ impl Display {
             }
             #[cfg(all(feature = "x11", unix))]
             Backend::X11(w) => {
+                w.set_title(title);
+                Ok(())
+            }
+            #[cfg(feature = "gl")]
+            Backend::Gl(w) => {
                 w.set_title(title);
                 Ok(())
             }
@@ -385,6 +412,10 @@ impl Display {
         if let Backend::X11(w) = &mut self.backend {
             w.end();
         }
+        #[cfg(feature = "gl")]
+        if let Backend::Gl(w) = &mut self.backend {
+            w.end();
+        }
         self.backend = Backend::Null;
     }
 
@@ -411,6 +442,8 @@ impl Display {
             Backend::Winit(win) => win.handle_resize(),
             #[cfg(all(feature = "x11", unix))]
             Backend::X11(win) => win.handle_resize(),
+            #[cfg(feature = "gl")]
+            Backend::Gl(win) => win.handle_resize(),
             _ => {}
         }
     }
@@ -438,6 +471,10 @@ impl Display {
             }
             #[cfg(all(feature = "x11", unix))]
             Backend::X11(w) => {
+                w.display(&self.canvas);
+            }
+            #[cfg(feature = "gl")]
+            Backend::Gl(w) => {
                 w.display(&self.canvas);
             }
         }
@@ -496,6 +533,19 @@ impl Display {
             }
         }
 
+        #[cfg(feature = "gl")]
+        {
+            let window_size = match &self.backend {
+                Backend::Gl(w) => Some(w.size()),
+                _ => None,
+            };
+            if let Some((w, h)) = window_size {
+                if w > 0 && h > 0 && (w != self.canvas.width() || h != self.canvas.height()) {
+                    self.apply_resize(w, h);
+                }
+            }
+        }
+
         // Constant framerate handling.
         let now = Instant::now();
         let mut ticks = self.lastticks + (now - self.frame_start).as_micros() as i64;
@@ -538,6 +588,8 @@ impl Display {
             Backend::Winit(w) => w.get_event(mask, timeout_us as i64),
             #[cfg(all(feature = "x11", unix))]
             Backend::X11(w) => w.get_event(&self.canvas, mask, timeout_us as i64),
+            #[cfg(feature = "gl")]
+            Backend::Gl(w) => w.get_event(mask, timeout_us as i64),
             Backend::Null | Backend::Raw => None,
         };
 
@@ -627,6 +679,13 @@ fn install_backend(canvas: &mut Canvas, driver: Driver) -> Result<Backend> {
         }
         #[cfg(all(feature = "std", not(all(feature = "x11", unix))))]
         Driver::X11 => return Err(CacaError::Invalid),
+        #[cfg(feature = "gl")]
+        Driver::Gl => {
+            let win = gl::Gl::new(canvas)?;
+            Backend::Gl(win)
+        }
+        #[cfg(all(feature = "std", not(feature = "gl")))]
+        Driver::Gl => return Err(CacaError::Invalid),
     })
 }
 

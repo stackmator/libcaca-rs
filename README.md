@@ -65,6 +65,7 @@ assert_eq!(cv.get_char(2, 2), b'H' as u32);
 | Driver     | Description                                        |
 | ---------- | -------------------------------------------------- |
 | `winit`    | graphical window (`gui` feature)                    |
+| `gl`       | OpenGL window (`gl` feature)                        |
 | `x11`      | X11 window (`x11` feature, Unix only)               |
 | `win32`    | native Win32 console (Unicode, mouse) — Windows only |
 | `terminal` | ANSI/VT terminal with raw-mode input and resize     |
@@ -84,6 +85,13 @@ resize events, `softbuffer` presents the canvas rasterised with the built-in
 bitmap font — no C libraries involved. It is never autodetected; request it
 explicitly (`Display::with_driver(cv, Some("winit"))`) or set
 `CACA_DRIVER=winit`. See `examples/gui.rs`.
+
+The `gl` driver (opt-in `gl` feature) is the pure-Rust answer to libcaca's
+GLUT driver: a `winit` window hosts an OpenGL context (via `glutin`), and the
+canvas is uploaded as a texture and drawn as a fullscreen quad (via `glow`).
+Request it explicitly with `Display::with_driver(cv, Some("gl"))`. Both
+graphical drivers are compile-verified; they need a display server or GPU at
+runtime to verify visually.
 
 The `x11` driver (opt-in `x11` feature, Unix only) is a native port of
 libcaca's X11 driver over pure-Rust `x11rb`: server-side core fonts,
@@ -130,11 +138,10 @@ cargo test --no-default-features
 
 The port covers the bulk of libcaca's public API (canvas, attributes, charset,
 primitives, transforms, frames, codecs, dithering, bitmap fonts, FIGlet/TOIlet
-fonts, display/events, the Win32 console driver, `winit` and X11 graphical
-window drivers, the DOS `conio` layer, option parsing, file I/O with
+fonts, display/events, the Win32 console driver, `winit`, X11 and OpenGL
+graphical window drivers, the DOS `conio` layer, option parsing, file I/O with
 transparent decompression and the `compat` pre-1.0 shim). Not yet ported:
-GL/Cocoa/VGA, which need a GPU context, macOS, or dead hardware (the `winit`
-driver covers the windowed class portably instead).
+Cocoa/VGA, which need macOS or dead hardware.
 
 Runnable programs live in `examples/`: `hello` (animated terminal demo),
 `transform` (a port of libcaca's sprite/transform demo), `event` (a port of
