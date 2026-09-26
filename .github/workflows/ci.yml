@@ -82,3 +82,14 @@ jobs:
           components: clippy
       - run: cargo clippy --all-targets --features compression -- -D warnings
       - run: cargo test --features compression
+
+  x11:
+    name: x11 feature on Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - run: cargo clippy --all-targets --features x11 -- -D warnings
+      - run: cargo test --features x11

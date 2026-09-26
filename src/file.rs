@@ -24,7 +24,9 @@
 //! ```
 
 use std::fs;
-use std::io::{Read, Write};
+use std::io::Write;
+#[cfg(feature = "compression")]
+use std::io::Read;
 use std::path::Path;
 
 use crate::error::{CacaError, Result};
@@ -88,10 +90,10 @@ impl File {
         }
         #[cfg(not(feature = "compression"))]
         {
-            return Ok(File {
+            Ok(File {
                 inner: Inner::Write { file, written: 0 },
                 readonly: false,
-            });
+            })
         }
     }
 

@@ -28,6 +28,8 @@ gui = ["std", "dep:winit", "dep:softbuffer"]
 # `compat` adds the deprecated pre-1.0 compatibility layer (`Compat`). Opt-in
 # so programs that do not need the legacy API pay nothing for it.
 compat = ["std"]
+# `x11` adds a native X11 window driver via pure-Rust x11rb (Unix only).
+x11 = ["std", "dep:x11rb"]
 # `compression` enables transparent gzip/ZIP decompression in the `file`
 # module (mirroring HAVE_ZLIB_H), backed by pure-Rust flate2 with no C code.
 compression = ["std", "dep:flate2"]
@@ -39,6 +41,7 @@ flate2 = { version = "1", optional = true, default-features = false, features = 
 
 [target.'cfg(unix)'.dependencies]
 libc = { version = "0.2", optional = true }
+x11rb = { version = "0.13", optional = true }
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.59", optional = true, features = [

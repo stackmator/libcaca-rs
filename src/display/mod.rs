@@ -16,6 +16,8 @@ mod terminal;
 mod win32;
 #[cfg(feature = "gui")]
 mod winit;
+#[cfg(all(feature = "x11", unix))]
+mod x11;
 
 pub use event::{key, Event, EventMask, KeyEvent};
 
@@ -33,43 +35,17 @@ use alloc::vec::Vec;
 
 /// The built-in display drivers.
 ///
-/// Requires the `std` feature.
-#[cfg(all(feature = "std", feature = "gui", windows))]
+/// Requires the `std` feature. Entries appear only when their driver is
+/// compiled in (`winit` needs `gui`, `x11` needs `x11` on Unix, `win32` needs
+/// Windows).
+#[cfg(feature = "std")]
 pub const DRIVER_LIST: &[(&str, &str)] = &[
-    ("win32", "Windows console"),
+    #[cfg(feature = "gui")]
     ("winit", "graphical window"),
-    ("terminal", "ANSI terminal"),
-    ("raw", "raw libcaca output"),
-    ("null", "null driver"),
-];
-
-/// The built-in display drivers.
-///
-/// Requires the `std` feature.
-#[cfg(all(feature = "std", feature = "gui", not(windows)))]
-pub const DRIVER_LIST: &[(&str, &str)] = &[
-    ("winit", "graphical window"),
-    ("terminal", "ANSI terminal"),
-    ("raw", "raw libcaca output"),
-    ("null", "null driver"),
-];
-
-/// The built-in display drivers.
-///
-/// Requires the `std` feature.
-#[cfg(all(feature = "std", not(feature = "gui"), windows))]
-pub const DRIVER_LIST: &[(&str, &str)] = &[
+    #[cfg(all(feature = "x11", unix))]
+    ("x11", "X11 window"),
+    #[cfg(windows)]
     ("win32", "Windows console"),
-    ("terminal", "ANSI terminal"),
-    ("raw", "raw libcaca output"),
-    ("null", "null driver"),
-];
-
-/// The built-in display drivers.
-///
-/// Requires the `std` feature.
-#[cfg(all(feature = "std", not(feature = "gui"), not(windows)))]
-pub const DRIVER_LIST: &[(&str, &str)] = &[
     ("terminal", "ANSI terminal"),
     ("raw", "raw libcaca output"),
     ("null", "null driver"),
@@ -86,6 +62,7 @@ pub enum Driver {
     Terminal,
     Win32,
     Winit,
+    X11,
 }
 
 #[cfg(feature = "std")]
@@ -98,6 +75,7 @@ impl Driver {
             Driver::Terminal => "terminal",
             Driver::Win32 => "win32",
             Driver::Winit => "winit",
+            Driver::X11 => "x11",
         }
     }
 
@@ -123,6 +101,16 @@ impl Driver {
                     Some(Driver::Winit)
                 }
                 #[cfg(not(feature = "gui"))]
+                {
+                    None
+                }
+            }
+            "x11" => {
+                #[cfg(all(feature = "x11", unix))]
+                {
+                    Some(Driver::X11)
+                }
+                #[cfg(not(all(feature = "x11", unix)))]
                 {
                     None
                 }
@@ -158,6 +146,8 @@ enum Backend {
     Win32(win32::Win32),
     #[cfg(feature = "gui")]
     Winit(winit::Winit),
+    #[cfg(all(feature = "x11", unix))]
+    X11(Box<x11::X11>),
 }
 
 /// A libcaca display context.
@@ -284,6 +274,8 @@ impl Display {
             Backend::Win32(w) => w.display_width(),
             #[cfg(feature = "gui")]
             Backend::Winit(w) => w.display_width(),
+            #[cfg(all(feature = "x11", unix))]
+            Backend::X11(w) => w.display_width(),
             Backend::Null | Backend::Raw => self.canvas.width(),
         }
     }
@@ -296,6 +288,8 @@ impl Display {
             Backend::Win32(w) => w.display_height(),
             #[cfg(feature = "gui")]
             Backend::Winit(w) => w.display_height(),
+            #[cfg(all(feature = "x11", unix))]
+            Backend::X11(w) => w.display_height(),
             Backend::Null | Backend::Raw => self.canvas.height(),
         }
     }
@@ -317,6 +311,11 @@ impl Display {
                 w.set_title(title);
                 Ok(())
             }
+            #[cfg(all(feature = "x11", unix))]
+            Backend::X11(w) => {
+                w.set_title(title);
+                Ok(())
+            }
             _ => Err(CacaError::NotImplemented),
         }
     }
@@ -326,6 +325,11 @@ impl Display {
         match &mut self.backend {
             Backend::Terminal(t) => {
                 t.set_cursor(show);
+                Ok(())
+            }
+            #[cfg(all(feature = "x11", unix))]
+            Backend::X11(w) => {
+                w.set_cursor(show);
                 Ok(())
             }
             _ => Err(CacaError::NotImplemented),
@@ -339,6 +343,8 @@ impl Display {
                 t.set_mouse(show);
                 Ok(())
             }
+            #[cfg(all(feature = "x11", unix))]
+            Backend::X11(w) => w.set_mouse(show),
             _ => Err(CacaError::NotImplemented),
         }
     }
@@ -375,6 +381,10 @@ impl Display {
         if let Backend::Winit(w) = &mut self.backend {
             w.end();
         }
+        #[cfg(all(feature = "x11", unix))]
+        if let Backend::X11(w) = &mut self.backend {
+            w.end();
+        }
         self.backend = Backend::Null;
     }
 
@@ -390,12 +400,17 @@ impl Display {
         let _ = self.canvas.set_size(w, h);
         self.resize_allow = false;
 
+        // Backing surfaces are recreated on resize, so force a full repaint.
+        let _ = self.canvas.add_dirty_rect(0, 0, w, h);
+
         match &mut self.backend {
             Backend::Terminal(t) => t.handle_resize(),
             #[cfg(windows)]
             Backend::Win32(win) => win.handle_resize(&self.canvas),
             #[cfg(feature = "gui")]
             Backend::Winit(win) => win.handle_resize(),
+            #[cfg(all(feature = "x11", unix))]
+            Backend::X11(win) => win.handle_resize(),
             _ => {}
         }
     }
@@ -419,6 +434,10 @@ impl Display {
             }
             #[cfg(feature = "gui")]
             Backend::Winit(w) => {
+                w.display(&self.canvas);
+            }
+            #[cfg(all(feature = "x11", unix))]
+            Backend::X11(w) => {
                 w.display(&self.canvas);
             }
         }
@@ -455,6 +474,19 @@ impl Display {
         {
             let window_size = match &self.backend {
                 Backend::Winit(w) => Some(w.size()),
+                _ => None,
+            };
+            if let Some((w, h)) = window_size {
+                if w > 0 && h > 0 && (w != self.canvas.width() || h != self.canvas.height()) {
+                    self.apply_resize(w, h);
+                }
+            }
+        }
+
+        #[cfg(all(feature = "x11", unix))]
+        {
+            let window_size = match &self.backend {
+                Backend::X11(w) => Some(w.size()),
                 _ => None,
             };
             if let Some((w, h)) = window_size {
@@ -504,6 +536,8 @@ impl Display {
             Backend::Win32(w) => w.get_event(&self.canvas, mask, timeout_us as i64),
             #[cfg(feature = "gui")]
             Backend::Winit(w) => w.get_event(mask, timeout_us as i64),
+            #[cfg(all(feature = "x11", unix))]
+            Backend::X11(w) => w.get_event(&self.canvas, mask, timeout_us as i64),
             Backend::Null | Backend::Raw => None,
         };
 
@@ -586,6 +620,13 @@ fn install_backend(canvas: &mut Canvas, driver: Driver) -> Result<Backend> {
         }
         #[cfg(all(feature = "std", not(feature = "gui")))]
         Driver::Winit => return Err(CacaError::Invalid),
+        #[cfg(all(feature = "x11", unix))]
+        Driver::X11 => {
+            let win = x11::X11::new(canvas)?;
+            Backend::X11(Box::new(win))
+        }
+        #[cfg(all(feature = "std", not(all(feature = "x11", unix))))]
+        Driver::X11 => return Err(CacaError::Invalid),
     })
 }
 
