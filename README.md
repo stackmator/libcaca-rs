@@ -95,7 +95,10 @@ parsing). Not yet ported: the graphical window drivers (X11/GL/cocoa/VGA) and
 the zlib-backed `caca_file_*` compressed I/O, which are platform-specific or
 need an external compression dependency.
 
-See `examples/` for runnable programs.
+Runnable programs live in `examples/`: `hello` (animated terminal demo),
+`transform` (a port of libcaca's sprite/transform demo) and `event` (a port of
+the event lister; type "quit" to exit). Set `CACA_DRIVER=null` to run them
+headlessly.
 
 ## License
 
