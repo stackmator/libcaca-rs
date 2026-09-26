@@ -1,0 +1,29 @@
+[package]
+name = "libcaca"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.74"
+description = "Pure-Rust port of libcaca, the Colour ASCII-Art library (no C dependency)"
+license = "WTFPL"
+repository = "https://github.com/stackmator/libcaca-rs"
+readme = "README.md"
+keywords = ["ascii-art", "terminal", "tui", "caca", "graphics"]
+categories = ["graphics", "command-line-interface"]
+
+[lib]
+name = "libcaca"
+path = "src/lib.rs"
+
+[dependencies]
+
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = [
+    "Win32_Foundation",
+    "Win32_System_Console",
+    "Win32_UI_Input_KeyboardAndMouse",
+] }
+
+[dev-dependencies]
