@@ -83,6 +83,21 @@ jobs:
       - run: cargo clippy --all-targets --features compression -- -D warnings
       - run: cargo test --features compression
 
+  vga-dos:
+    name: vga/dos features on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - run: cargo clippy --all-targets --features vga,dos -- -D warnings
+      - run: cargo test --features vga,dos
+
   x11:
     name: x11 feature on Ubuntu
     runs-on: ubuntu-latest

@@ -59,6 +59,11 @@ assert_eq!(cv.get_char(2, 2), b'H' as u32);
   (`compat` cargo feature, off by default) covering the deprecated `caca0`
   API: old event encoding, features, sprites, bitmaps, colours and the full
   old drawing vocabulary, so legacy programs port without rewriting.
+- **VGA/DOS emulation** — opt-in `vga` and `dos` features porting the
+  hardware drivers' logic as state (80x25 buffers, palette, cursor,
+  press/release event synthesis). Physical screen/port/DOS access is
+  impossible in user space; the portable logic is translated exactly and
+  byte-tested, with no invented presentation.
 
 ## Display drivers
 
@@ -150,9 +155,9 @@ The port covers the bulk of libcaca's public API (canvas, attributes, charset,
 primitives, transforms, frames, codecs, dithering, bitmap fonts, FIGlet/TOIlet
 fonts, display/events, the Win32 console driver, `winit`, X11 and OpenGL
 graphical window drivers, the DOS `conio` layer, option parsing, file I/O with
-transparent decompression and the `compat` pre-1.0 shim). Not yet ported:
-VGA, which needs dead 16-bit hardware, and the S-Lang/ncurses *bindings*
-(the `terminal` driver speaks the same ANSI protocol without C).
+transparent decompression, the `compat` pre-1.0 shim and the VGA/DOS
+hardware logic (as emulation state). Not yet ported: the S-Lang/ncurses
+*bindings* (the `terminal` driver speaks the same ANSI protocol without C).
 
 Runnable programs live in `examples/`: `hello` (animated terminal demo),
 `transform` (a port of libcaca's sprite/transform demo), `event` (a port of

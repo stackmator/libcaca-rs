@@ -28,6 +28,12 @@ gui = ["std", "dep:winit", "dep:softbuffer"]
 # `compat` adds the deprecated pre-1.0 compatibility layer (`Compat`). Opt-in
 # so programs that do not need the legacy API pay nothing for it.
 compat = ["std"]
+# `vga` adds emulated VGA text-mode hardware state (80x25 buffer, palette and
+# cursor) with the exact blit logic. Pure `alloc`/`core`, no new dependencies.
+vga = []
+# `dos` adds emulated DOS console state (screen buffer plus the press/release
+# event synthesis of the DOS driver). No new dependencies.
+dos = ["std"]
 # `gl` adds an OpenGL window driver via pure-Rust glutin + glow on a winit
 # window. Opt-in; needs a GPU (or software GL) at runtime.
 gl = ["std", "dep:winit", "dep:glutin", "dep:glutin-winit", "dep:glow", "dep:raw-window-handle"]

@@ -10,12 +10,18 @@
 
 #[cfg(all(feature = "cocoa", target_os = "macos"))]
 mod cocoa;
+#[cfg(feature = "dos")]
+pub mod dos;
 pub mod event;
 #[cfg(feature = "gl")]
 mod gl;
+#[cfg(feature = "std")]
+mod input;
 pub mod render;
 #[cfg(feature = "std")]
 mod terminal;
+#[cfg(feature = "vga")]
+pub mod vga;
 #[cfg(all(feature = "std", windows))]
 mod win32;
 #[cfg(feature = "gui")]
