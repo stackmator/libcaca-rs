@@ -108,7 +108,8 @@ and dithers it back for display), `colors` (the 16x16 colour-pair chart),
 `fullwidth` (fullwidth glyph handling), `hsv` (a dithered HSV gradient) and
 `driver` (the driver list with live switching), `gamma` (gamma-corrected
 dithering under a moving mask), `mouse` (mouse tracking and buttons),
-`figfont` (`figfont <font.flf> <text>`, rendering FIGlet fonts to UTF-8).
+`figfont` (`figfont <font.flf> <text>`, rendering FIGlet fonts to UTF-8) and
+`unicode` (Unicode text, gradient blocks and double-width glyphs).
 Unit tests live alongside the modules; `tests/canvas_api.rs` ports the C API
 stress test. Set `CACA_DRIVER=null` to run the examples headlessly.
 
