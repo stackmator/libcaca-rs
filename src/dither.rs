@@ -486,7 +486,7 @@ impl Dither {
     }
 
     /// The list of available algorithms (`key`, `description`, ...).
-    pub fn algorithm_list(&self) -> &'static [&'static str] {
+    pub fn algorithm_list() -> &'static [&'static str] {
         ALGORITHM_LIST
     }
 
@@ -1016,7 +1016,7 @@ mod tests {
         assert!(!d.antialias_list().is_empty());
         assert!(!d.color_list().is_empty());
         assert!(!d.charset_list().is_empty());
-        assert!(!d.algorithm_list().is_empty());
+        assert!(!Dither::algorithm_list().is_empty());
     }
 
     #[test]

@@ -196,6 +196,11 @@ tiling four child `caca` streams), `snake` (the conio snake game),
 and `gui`
 (the graphical window demo, needs `--features gui`). `trifiller` dithers an
 image file into its texture when built with `--features import`.
+
+Two real command-line tools ship as binaries (both need
+`--features import`): `img2txt` (convert an image to text, e.g.
+`img2txt -W 80 -f ansi ./caca.png`) and `cacaview` (interactive terminal
+image viewer with zoom, gamma, playlist and help).
 Unit tests live alongside the modules; `tests/canvas_api.rs` ports the C API
 stress test. Set `CACA_DRIVER=null` to run the examples headlessly.
 

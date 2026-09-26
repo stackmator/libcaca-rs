@@ -85,6 +85,31 @@ impl Image {
         self.dither.set_algorithm(name)
     }
 
+    /// The current dithering algorithm (old `caca_get_dither_algorithm`).
+    pub fn algorithm(&self) -> &str {
+        self.dither.algorithm()
+    }
+
+    /// The available algorithms as `name`, `description`, ... pairs.
+    pub fn algorithm_list() -> &'static [&'static str] {
+        Dither::algorithm_list()
+    }
+
+    /// Adjust the brightness (old `caca_set_dither_brightness`).
+    pub fn set_brightness(&mut self, value: f32) -> Result<()> {
+        self.dither.set_brightness(value)
+    }
+
+    /// Adjust the contrast (old `caca_set_dither_contrast`).
+    pub fn set_contrast(&mut self, value: f32) -> Result<()> {
+        self.dither.set_contrast(value)
+    }
+
+    /// Adjust the gamma (old `caca_set_dither_gamma`).
+    pub fn set_gamma(&mut self, value: f32) -> Result<()> {
+        self.dither.set_gamma(value)
+    }
+
     /// Dither the image onto a `w` × `h` region of the canvas at `(x, y)`
     /// (old `caca_dither_bitmap`).
     pub fn dither_onto(&self, cv: &mut Canvas, x: i32, y: i32, w: i32, h: i32) -> Result<()> {

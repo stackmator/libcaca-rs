@@ -14,6 +14,16 @@ categories = ["graphics", "command-line-interface"]
 name = "libcaca"
 path = "src/lib.rs"
 
+[[bin]]
+name = "img2txt"
+path = "src/bin/img2txt.rs"
+required-features = ["import"]
+
+[[bin]]
+name = "cacaview"
+path = "src/bin/cacaview.rs"
+required-features = ["import"]
+
 [features]
 default = ["std"]
 # `std` enables the OS-interactive layer: display drivers (terminal, win32),
