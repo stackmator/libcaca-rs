@@ -46,6 +46,7 @@ pub use attr::{Attr, Color, Style};
 pub use canvas::{rand, Canvas, CACA_MAGIC_FULLWIDTH};
 pub use conio::Conio;
 pub use display::{key, Display, Driver, Event, EventMask, KeyEvent};
+pub use dither::Dither;
 pub use error::{CacaError, Result};
 pub use figfont::FigFont;
 pub use font::Font;

@@ -96,9 +96,10 @@ the zlib-backed `caca_file_*` compressed I/O, which are platform-specific or
 need an external compression dependency.
 
 Runnable programs live in `examples/`: `hello` (animated terminal demo),
-`transform` (a port of libcaca's sprite/transform demo) and `event` (a port of
-the event lister; type "quit" to exit). Set `CACA_DRIVER=null` to run them
-headlessly.
+`transform` (a port of libcaca's sprite/transform demo), `event` (a port of
+the event lister; type "quit" to exit) and `export` (a port of the codec demo
+that renders the classic showcase canvas and exports it, e.g.
+`export ansi`, `export tga`). Set `CACA_DRIVER=null` to run them headlessly.
 
 ## License
 
