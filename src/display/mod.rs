@@ -10,20 +10,29 @@
 
 pub mod event;
 pub mod render;
+#[cfg(feature = "std")]
 mod terminal;
-#[cfg(windows)]
+#[cfg(all(feature = "std", windows))]
 mod win32;
 
 pub use event::{key, Event, EventMask, KeyEvent};
 
+#[cfg(feature = "std")]
 use std::io::{IsTerminal, Write};
+#[cfg(feature = "std")]
 use std::time::{Duration, Instant};
 
+#[cfg(feature = "std")]
 use crate::canvas::Canvas;
+#[cfg(feature = "std")]
 use crate::error::{CacaError, Result};
+#[cfg(feature = "std")]
+use alloc::vec::Vec;
 
 /// The built-in display drivers.
-#[cfg(windows)]
+///
+/// Requires the `std` feature.
+#[cfg(all(feature = "std", windows))]
 pub const DRIVER_LIST: &[(&str, &str)] = &[
     ("win32", "Windows console"),
     ("terminal", "ANSI terminal"),
@@ -32,7 +41,9 @@ pub const DRIVER_LIST: &[(&str, &str)] = &[
 ];
 
 /// The built-in display drivers.
-#[cfg(not(windows))]
+///
+/// Requires the `std` feature.
+#[cfg(all(feature = "std", not(windows)))]
 pub const DRIVER_LIST: &[(&str, &str)] = &[
     ("terminal", "ANSI terminal"),
     ("raw", "raw libcaca output"),
@@ -40,6 +51,9 @@ pub const DRIVER_LIST: &[(&str, &str)] = &[
 ];
 
 /// A display driver kind.
+///
+/// Requires the `std` feature.
+#[cfg(feature = "std")]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Driver {
     Null,
@@ -48,6 +62,7 @@ pub enum Driver {
     Win32,
 }
 
+#[cfg(feature = "std")]
 impl Driver {
     /// The driver's internal name.
     pub fn name(self) -> &'static str {
@@ -81,6 +96,7 @@ impl Driver {
 }
 
 /// Choose the best available driver for the current process.
+#[cfg(feature = "std")]
 fn autodetect_driver() -> Driver {
     #[cfg(windows)]
     {
@@ -96,6 +112,7 @@ fn autodetect_driver() -> Driver {
     }
 }
 
+#[cfg(feature = "std")]
 enum Backend {
     Null,
     Raw,
@@ -105,6 +122,9 @@ enum Backend {
 }
 
 /// A libcaca display context.
+///
+/// Requires the `std` feature.
+#[cfg(feature = "std")]
 pub struct Display {
     canvas: Canvas,
     driver: Driver,
@@ -118,6 +138,7 @@ pub struct Display {
     event_queue: Vec<Event>,
 }
 
+#[cfg(feature = "std")]
 impl Display {
     /// Create a display with a freshly allocated 80×24 canvas.
     pub fn create() -> Result<Display> {
@@ -450,12 +471,14 @@ impl Display {
     }
 }
 
+#[cfg(feature = "std")]
 impl Drop for Display {
     fn drop(&mut self) {
         self.end_backend();
     }
 }
 
+#[cfg(feature = "std")]
 fn install_backend(canvas: &mut Canvas, driver: Driver) -> Result<Backend> {
     Ok(match driver {
         Driver::Null => Backend::Null,
@@ -486,8 +509,9 @@ fn install_backend(canvas: &mut Canvas, driver: Driver) -> Result<Backend> {
     })
 }
 
-impl std::fmt::Debug for Display {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+#[cfg(feature = "std")]
+impl core::fmt::Debug for Display {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("Display")
             .field("driver", &self.driver_name())
             .field("width", &self.canvas.width())
@@ -496,7 +520,7 @@ impl std::fmt::Debug for Display {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "std"))]
 mod tests {
     use super::*;
     use crate::attr::Color;

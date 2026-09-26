@@ -4,6 +4,8 @@
 //! is a grid of character cells, each with its own 32-bit attribute. Multiple
 //! animation frames are supported.
 
+use alloc::{boxed::Box, string::String, vec, vec::Vec};
+
 use crate::attr::{Attr, Color};
 use crate::dirty::DirtyRect;
 use crate::error::{CacaError, Result};
@@ -230,8 +232,8 @@ impl Canvas {
     }
 }
 
-impl std::fmt::Debug for Canvas {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Debug for Canvas {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("Canvas")
             .field("width", &self.width())
             .field("height", &self.height())
@@ -243,20 +245,18 @@ impl std::fmt::Debug for Canvas {
 
 /// Generate a random integer in `[min, max)`.
 ///
-/// Uses a process-global xorshift generator seeded from the system clock.
+/// Uses a process-global xorshift generator. Without the `std` feature there
+/// is no clock to seed from, so the sequence is deterministic per process
+/// (but still varies from call to call).
 pub fn rand(min: i32, max: i32) -> i32 {
-    use std::sync::atomic::{AtomicU64, Ordering};
-    use std::time::{SystemTime, UNIX_EPOCH};
+    use core::sync::atomic::{AtomicU64, Ordering};
 
-    static STATE: AtomicU64 = AtomicU64::new(0);
+    static STATE: AtomicU64 = AtomicU64::new(0x9e37_79b9_7f4a_7c15);
 
-    let mut s = STATE.load(Ordering::Relaxed);
+    // Mix in a per-call counter so concurrent callers still advance.
+    let mut s = STATE.fetch_add(0x2545_F491_4F6C_DD1D, Ordering::Relaxed);
     if s == 0 {
-        s = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .map(|d| d.as_nanos() as u64)
-            .unwrap_or(0x9e37_79b9_7f4a_7c15)
-            | 1;
+        s = 0x9e37_79b9_7f4a_7c15;
     }
     // xorshift64*
     s ^= s >> 12;

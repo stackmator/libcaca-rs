@@ -7,6 +7,8 @@ mod image;
 mod native;
 mod text;
 
+use alloc::vec::Vec;
+
 use crate::canvas::Canvas;
 use crate::error::{CacaError, Result};
 
@@ -30,6 +32,9 @@ impl Canvas {
     }
 
     /// Import a file into the current frame.
+    ///
+    /// Requires the `std` feature.
+    #[cfg(feature = "std")]
     pub fn import_from_file(&mut self, path: &std::path::Path, format: &str) -> Result<usize> {
         let data = std::fs::read(path).map_err(|_| CacaError::Invalid)?;
         self.import_from_memory(&data, format)
@@ -54,6 +59,9 @@ impl Canvas {
     }
 
     /// Import a file into the current frame at the given position.
+    ///
+    /// Requires the `std` feature.
+    #[cfg(feature = "std")]
     pub fn import_area_from_file(
         &mut self,
         x: i32,
@@ -159,6 +167,7 @@ pub fn export_list() -> &'static [&'static str] {
 mod tests {
     use super::*;
     use crate::attr::Color;
+    use alloc::string::String;
 
     #[test]
     fn text_roundtrip() {

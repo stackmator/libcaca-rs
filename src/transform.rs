@@ -3,6 +3,8 @@
 //! Port of `caca/transform.c`. The large character lookup tables are
 //! generated from the C source into [`crate::transform_tables`].
 
+use alloc::vec;
+
 use crate::canvas::{Canvas, CACA_MAGIC_FULLWIDTH};
 use crate::error::{CacaError, Result};
 use crate::transform_tables::{

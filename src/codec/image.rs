@@ -1,5 +1,7 @@
 //! PostScript and SVG exports.
 
+use alloc::{format, string::String, vec, vec::Vec};
+
 use crate::attr::Attr;
 use crate::canvas::{Canvas, CACA_MAGIC_FULLWIDTH};
 use crate::error::{CacaError, Result};

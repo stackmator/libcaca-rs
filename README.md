@@ -86,6 +86,22 @@ loop {
 }
 ```
 
+## `no_std` support
+
+Without the default `std` feature the crate is `no_std` + `alloc`: the canvas,
+codec, dither, font, event-parsing and ANSI-rendering core keeps working, which
+suits embedded or `wasm` targets. The OS-interactive layer needs `std` and is
+gated behind the feature: display drivers (`Display`, `Driver`), the `Conio`
+console, file-based helpers (`import_from_file`, `FigFont::load`) and
+wall-clock framerate timing. `rand` stays available but is deterministically
+seeded without a clock. The pure `text` and `font2tga` examples build without
+`std`; the rest require it.
+
+```sh
+cargo build --no-default-features
+cargo test --no-default-features
+```
+
 ## Status
 
 The port covers the bulk of libcaca's public API (canvas, attributes, charset,

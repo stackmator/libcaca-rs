@@ -9,6 +9,8 @@
 //! relies on `unsigned int` wraparound, the equivalent wrapping operations are
 //! used explicitly so the behaviour is well-defined in Rust.
 
+use alloc::vec;
+
 use crate::attr::Color;
 use crate::canvas::Canvas;
 use crate::error::{CacaError, Result};
@@ -920,6 +922,7 @@ fn gammapow(x: f32, y: f32) -> f32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use alloc::vec::Vec;
 
     fn dither32() -> Dither {
         Dither::new(

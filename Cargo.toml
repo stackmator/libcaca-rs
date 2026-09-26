@@ -14,13 +14,21 @@ categories = ["graphics", "command-line-interface"]
 name = "libcaca"
 path = "src/lib.rs"
 
+[features]
+default = ["std"]
+# `std` enables the OS-interactive layer: display drivers (terminal, win32),
+# the Conio console, file-based helpers and wall-clock timing. Without it the
+# crate is `no_std` + `alloc`: the full canvas, codec, dither, font and
+# rendering core keeps working (e.g. for embedded or wasm targets).
+std = ["dep:libc", "dep:windows-sys"]
+
 [dependencies]
 
 [target.'cfg(unix)'.dependencies]
-libc = "0.2"
+libc = { version = "0.2", optional = true }
 
 [target.'cfg(windows)'.dependencies]
-windows-sys = { version = "0.59", features = [
+windows-sys = { version = "0.59", optional = true, features = [
     "Win32_Foundation",
     "Win32_Security",
     "Win32_Storage_FileSystem",
@@ -29,3 +37,74 @@ windows-sys = { version = "0.59", features = [
 ] }
 
 [dev-dependencies]
+
+# Examples using the display drivers (or file import) need the `std`
+# feature; the pure canvas/codec examples (text, font2tga) build without it.
+[[example]]
+name = "export"
+path = "examples/export.rs"
+required-features = ["std"]
+[[example]]
+name = "hello"
+path = "examples/hello.rs"
+required-features = ["std"]
+[[example]]
+name = "transform"
+path = "examples/transform.rs"
+required-features = ["std"]
+[[example]]
+name = "event"
+path = "examples/event.rs"
+required-features = ["std"]
+[[example]]
+name = "trifiller"
+path = "examples/trifiller.rs"
+required-features = ["std"]
+[[example]]
+name = "font"
+path = "examples/font.rs"
+required-features = ["std"]
+[[example]]
+name = "colors"
+path = "examples/colors.rs"
+required-features = ["std"]
+[[example]]
+name = "truecolor"
+path = "examples/truecolor.rs"
+required-features = ["std"]
+[[example]]
+name = "blit"
+path = "examples/blit.rs"
+required-features = ["std"]
+[[example]]
+name = "frames"
+path = "examples/frames.rs"
+required-features = ["std"]
+[[example]]
+name = "fullwidth"
+path = "examples/fullwidth.rs"
+required-features = ["std"]
+[[example]]
+name = "hsv"
+path = "examples/hsv.rs"
+required-features = ["std"]
+[[example]]
+name = "driver"
+path = "examples/driver.rs"
+required-features = ["std"]
+[[example]]
+name = "gamma"
+path = "examples/gamma.rs"
+required-features = ["std"]
+[[example]]
+name = "mouse"
+path = "examples/mouse.rs"
+required-features = ["std"]
+[[example]]
+name = "figfont"
+path = "examples/figfont.rs"
+required-features = ["std"]
+[[example]]
+name = "unicode"
+path = "examples/unicode.rs"
+required-features = ["std"]

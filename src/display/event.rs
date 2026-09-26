@@ -3,6 +3,11 @@
 //! Port of the public event API in `caca/event.c` and `caca/caca.h`, together
 //! with a small incremental ANSI/VT input parser used by the terminal driver.
 
+use alloc::{
+    string::{String, ToString},
+    vec::Vec,
+};
+
 use crate::charset::utf8_to_utf32;
 
 /// Special key values, mirroring `enum caca_key`.

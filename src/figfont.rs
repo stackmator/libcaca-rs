@@ -2,20 +2,14 @@
 //!
 //! Port of `caca/figfont.c`. Unlike the C library, where the font is attached
 //! to a canvas through `caca_canvas_set_figfont`, this is an idiomatic
-//! standalone [`FigFont`] whose methods take the target [`Canvas`] explicitly.
+//! standalone `FigFont` whose methods take the target [`Canvas`] explicitly.
 //!
-//! ```no_run
-//! use libcaca::{Canvas, FigFont};
-//!
-//! let mut ff = FigFont::load("slant.flf")?;
-//! let mut cv = Canvas::new(1, 1)?;
-//! for ch in "hello".chars() {
-//!     ff.put_char(&mut cv, ch as u32)?;
-//! }
-//! ff.flush(&mut cv)?;
-//! # Ok::<(), libcaca::CacaError>(())
-//! ```
+//! Load a font file with `FigFont::load` (requires `std`), or parse raw font
+//! data with [`FigFont::from_bytes`], then render characters and flush:
 
+use alloc::{string::String, vec::Vec};
+
+#[cfg(feature = "std")]
 use std::path::Path;
 
 use crate::canvas::Canvas;
@@ -77,6 +71,21 @@ fn line_codepoints(line: &[u8]) -> Vec<u32> {
 
 impl FigFont {
     /// Load a FIGfont from a path, trying the bare path then `.tlf` and `.flf`.
+    ///
+    /// Requires the `std` feature.
+    ///
+    /// ```no_run
+    /// use libcaca::{Canvas, FigFont};
+    ///
+    /// let mut ff = FigFont::load("slant.flf")?;
+    /// let mut cv = Canvas::new(1, 1)?;
+    /// for ch in "hello".chars() {
+    ///     ff.put_char(&mut cv, ch as u32)?;
+    /// }
+    /// ff.flush(&mut cv)?;
+    /// # Ok::<(), libcaca::CacaError>(())
+    /// ```
+    #[cfg(feature = "std")]
     pub fn load<P: AsRef<Path>>(path: P) -> Result<FigFont> {
         let path = path.as_ref();
         let candidates = [
@@ -496,8 +505,8 @@ impl FigFont {
     }
 }
 
-impl std::fmt::Debug for FigFont {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Debug for FigFont {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("FigFont")
             .field("height", &self.height)
             .field("baseline", &self.baseline)
@@ -585,6 +594,7 @@ fn hsmush(ch1: u32, ch2: u32, rule: i32) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use alloc::format;
 
     fn synthetic_font() -> Vec<u8> {
         let mut s = String::new();

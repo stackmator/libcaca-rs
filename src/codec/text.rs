@@ -1,5 +1,7 @@
 //! Text, ANSI and UTF-8 codecs.
 
+use alloc::{format, vec::Vec};
+
 use crate::attr::{Attr, Color};
 use crate::canvas::{Canvas, CACA_MAGIC_FULLWIDTH};
 use crate::charset::{cp437_to_utf32, utf32_is_fullwidth, utf32_to_cp437, utf8_to_utf32};

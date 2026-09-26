@@ -19,6 +19,18 @@
 //! ```
 //!
 //! [libcaca]: https://github.com/cacalabs/libcaca
+//!
+//! # `no_std` support
+//!
+//! Without the default `std` feature this crate is `no_std` + `alloc`: the
+//! canvas, codec, dither, font, event-parsing and ANSI-rendering core keeps
+//! working. The OS-interactive layer — display drivers (`Display`, `Driver`),
+//! the `Conio` console, file-based helpers (`import_from_file`,
+//! `FigFont::load`) and wall-clock framerate timing — requires `std`.
+
+#![cfg_attr(not(feature = "std"), no_std)]
+
+extern crate alloc;
 
 pub mod attr;
 #[path = "box.rs"]
@@ -27,6 +39,7 @@ pub mod canvas;
 pub mod charset;
 pub mod codec;
 pub mod conic;
+#[cfg(feature = "std")]
 pub mod conio;
 pub mod dirty;
 pub mod display;
@@ -44,8 +57,11 @@ pub mod triangle;
 
 pub use attr::{Attr, Color, Style};
 pub use canvas::{rand, Canvas, CACA_MAGIC_FULLWIDTH};
+#[cfg(feature = "std")]
 pub use conio::Conio;
-pub use display::{key, Display, Driver, Event, EventMask, KeyEvent};
+pub use display::{key, Event, EventMask, KeyEvent};
+#[cfg(feature = "std")]
+pub use display::{Display, Driver};
 pub use dither::Dither;
 pub use error::{CacaError, Result};
 pub use figfont::FigFont;

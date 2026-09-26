@@ -25,6 +25,10 @@ pub struct LongOpt {
     pub val: i32,
 }
 
+#[cfg(feature = "std")]
+use alloc::string::String;
+use alloc::vec::Vec;
+
 /// A `getopt_long`-style parser.
 pub struct Getopt {
     args: Vec<Vec<u8>>,
@@ -56,7 +60,7 @@ impl Getopt {
     pub fn optarg(&self) -> Option<&str> {
         self.optarg
             .as_deref()
-            .map(|b| std::str::from_utf8(b).unwrap_or(""))
+            .map(|b| core::str::from_utf8(b).unwrap_or(""))
     }
 
     /// Parse the next option.
@@ -119,11 +123,7 @@ impl Getopt {
                 match rest.get(name.len()) {
                     Some(b'=') => {
                         if !opt.has_arg {
-                            eprintln!(
-                                "{}: unrecognized option `--{}'",
-                                self.prog(),
-                                String::from_utf8_lossy(rest)
-                            );
+                            self.warn_unrecognized(rest);
                             return b'?' as i32;
                         }
                         if let Some(li) = longindex {
@@ -147,11 +147,7 @@ impl Getopt {
                     _ => {}
                 }
             }
-            eprintln!(
-                "{}: unrecognized option `--{}'",
-                self.prog(),
-                String::from_utf8_lossy(rest)
-            );
+            self.warn_unrecognized(rest);
             return b'?' as i32;
         }
 
@@ -194,6 +190,18 @@ impl Getopt {
         ret
     }
 
+    fn warn_unrecognized(&self, rest: &[u8]) {
+        #[cfg(feature = "std")]
+        eprintln!(
+            "{}: unrecognized option `--{}'",
+            self.prog(),
+            String::from_utf8_lossy(rest)
+        );
+        #[cfg(not(feature = "std"))]
+        let _ = (self, rest);
+    }
+
+    #[cfg(feature = "std")]
     fn prog(&self) -> String {
         self.args
             .first()

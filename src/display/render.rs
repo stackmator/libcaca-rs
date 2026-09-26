@@ -4,6 +4,8 @@
 //! the canvas and a small incremental state, so it can be unit-tested without
 //! a real terminal.
 
+use alloc::{format, vec::Vec};
+
 use crate::attr::Attr;
 use crate::canvas::{Canvas, CACA_MAGIC_FULLWIDTH};
 use crate::charset::{utf32_is_fullwidth, utf32_to_utf8};
@@ -97,7 +99,7 @@ fn push_code(out: &mut Vec<u8>, code: ColorCode, is_fg: bool) {
         ColorCode::Ansi(i) => {
             let fg = ANSI_FG[(i & 0x0f) as usize];
             let n = if is_fg { fg } else { fg + 10 };
-            out.extend_from_slice(n.to_string().as_bytes());
+            out.extend_from_slice(format!("{}", n).as_bytes());
         }
         ColorCode::Rgb(r, g, b) => {
             if is_fg {
@@ -201,6 +203,7 @@ pub const LEAVE_SCREEN: &[u8] = b"\x1b[0m\x1b[?25h\x1b[?1049l";
 mod tests {
     use super::*;
     use crate::attr::Color;
+    use alloc::string::String;
 
     #[test]
     fn renders_characters_and_colours() {

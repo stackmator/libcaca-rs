@@ -2,6 +2,8 @@
 //!
 //! Port of `caca/string.c` (minus frame handling, which lives in [`crate::frame`]).
 
+use alloc::{format, vec::Vec};
+
 use crate::attr::{Attr, Color};
 use crate::canvas::{Canvas, CACA_MAGIC_FULLWIDTH};
 use crate::charset::utf32_is_fullwidth;

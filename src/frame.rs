@@ -2,6 +2,8 @@
 //!
 //! Port of `caca/frame.c`.
 
+use alloc::{format, string::ToString};
+
 use crate::canvas::Canvas;
 use crate::error::{CacaError, Result};
 

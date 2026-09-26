@@ -4,6 +4,8 @@
 //! header followed by a block table, a glyph table and packed glyph data.
 //! Two built-in fonts are embedded: `"Monospace 9"` and `"Monospace Bold 12"`.
 
+use alloc::vec::Vec;
+
 use crate::attr::Attr;
 use crate::canvas::Canvas;
 use crate::error::{CacaError, Result};
@@ -286,8 +288,8 @@ impl Font {
     }
 }
 
-impl std::fmt::Debug for Font {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl core::fmt::Debug for Font {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.debug_struct("Font")
             .field("width", &self.width)
             .field("height", &self.height)
@@ -301,6 +303,7 @@ impl std::fmt::Debug for Font {
 mod tests {
     use super::*;
     use crate::attr::Color;
+    use alloc::vec;
 
     #[test]
     fn load_and_render_builtin() {

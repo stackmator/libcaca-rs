@@ -2,6 +2,8 @@
 //!
 //! Port of `caca/charset.c`: UTF-8, UTF-32, CP437 and ASCII conversions.
 
+use alloc::string::String;
+
 /// Number of trailing bytes that follow a given UTF-8 lead byte.
 static TRAILING: [u8; 256] = {
     let mut t = [0u8; 256];

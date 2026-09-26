@@ -51,6 +51,7 @@ impl fmt::Display for CacaError {
     }
 }
 
+#[cfg(feature = "std")]
 impl std::error::Error for CacaError {}
 
 /// Convenience alias used throughout the crate.

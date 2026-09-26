@@ -1,5 +1,7 @@
 //! Native libcaca binary import/export and BIN import.
 
+use alloc::vec::Vec;
+
 use crate::attr::{Attr, Color};
 use crate::canvas::Canvas;
 use crate::charset::cp437_to_utf32;
