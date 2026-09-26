@@ -8,6 +8,8 @@
 //! - `raw` — writes the native `caca` binary format to stdout
 //! - `terminal` — ANSI/VT terminal driver with raw-mode input
 
+#[cfg(all(feature = "cocoa", target_os = "macos"))]
+mod cocoa;
 pub mod event;
 #[cfg(feature = "gl")]
 mod gl;
@@ -46,6 +48,8 @@ pub const DRIVER_LIST: &[(&str, &str)] = &[
     ("winit", "graphical window"),
     #[cfg(feature = "gl")]
     ("gl", "OpenGL window"),
+    #[cfg(all(feature = "cocoa", target_os = "macos"))]
+    ("cocoa", "macOS window"),
     #[cfg(all(feature = "x11", unix))]
     ("x11", "X11 window"),
     #[cfg(windows)]
@@ -68,6 +72,7 @@ pub enum Driver {
     Winit,
     X11,
     Gl,
+    Cocoa,
 }
 
 #[cfg(feature = "std")]
@@ -81,6 +86,7 @@ impl Driver {
             Driver::Win32 => "win32",
             Driver::Winit => "winit",
             Driver::Gl => "gl",
+            Driver::Cocoa => "cocoa",
             Driver::X11 => "x11",
         }
     }
@@ -131,6 +137,16 @@ impl Driver {
                     None
                 }
             }
+            "cocoa" => {
+                #[cfg(all(feature = "cocoa", target_os = "macos"))]
+                {
+                    Some(Driver::Cocoa)
+                }
+                #[cfg(not(all(feature = "cocoa", target_os = "macos")))]
+                {
+                    None
+                }
+            }
             _ => None,
         }
     }
@@ -166,6 +182,8 @@ enum Backend {
     X11(Box<x11::X11>),
     #[cfg(feature = "gl")]
     Gl(gl::Gl),
+    #[cfg(all(feature = "cocoa", target_os = "macos"))]
+    Cocoa(cocoa::Cocoa),
 }
 
 /// A libcaca display context.
@@ -296,6 +314,8 @@ impl Display {
             Backend::X11(w) => w.display_width(),
             #[cfg(feature = "gl")]
             Backend::Gl(w) => w.display_width(),
+            #[cfg(all(feature = "cocoa", target_os = "macos"))]
+            Backend::Cocoa(w) => w.display_width(),
             Backend::Null | Backend::Raw => self.canvas.width(),
         }
     }
@@ -312,6 +332,8 @@ impl Display {
             Backend::X11(w) => w.display_height(),
             #[cfg(feature = "gl")]
             Backend::Gl(w) => w.display_height(),
+            #[cfg(all(feature = "cocoa", target_os = "macos"))]
+            Backend::Cocoa(w) => w.display_height(),
             Backend::Null | Backend::Raw => self.canvas.height(),
         }
     }
@@ -343,6 +365,11 @@ impl Display {
                 w.set_title(title);
                 Ok(())
             }
+            #[cfg(all(feature = "cocoa", target_os = "macos"))]
+            Backend::Cocoa(w) => {
+                w.set_title(title);
+                Ok(())
+            }
             _ => Err(CacaError::NotImplemented),
         }
     }
@@ -359,6 +386,11 @@ impl Display {
                 w.set_cursor(show);
                 Ok(())
             }
+            #[cfg(all(feature = "cocoa", target_os = "macos"))]
+            Backend::Cocoa(w) => {
+                w.set_cursor(show);
+                Ok(())
+            }
             _ => Err(CacaError::NotImplemented),
         }
     }
@@ -372,6 +404,8 @@ impl Display {
             }
             #[cfg(all(feature = "x11", unix))]
             Backend::X11(w) => w.set_mouse(show),
+            #[cfg(all(feature = "cocoa", target_os = "macos"))]
+            Backend::Cocoa(w) => w.set_mouse(show),
             _ => Err(CacaError::NotImplemented),
         }
     }
@@ -416,6 +450,10 @@ impl Display {
         if let Backend::Gl(w) = &mut self.backend {
             w.end();
         }
+        #[cfg(all(feature = "cocoa", target_os = "macos"))]
+        if let Backend::Cocoa(w) = &mut self.backend {
+            w.end();
+        }
         self.backend = Backend::Null;
     }
 
@@ -444,6 +482,8 @@ impl Display {
             Backend::X11(win) => win.handle_resize(),
             #[cfg(feature = "gl")]
             Backend::Gl(win) => win.handle_resize(),
+            #[cfg(all(feature = "cocoa", target_os = "macos"))]
+            Backend::Cocoa(win) => win.handle_resize(),
             _ => {}
         }
     }
@@ -475,6 +515,10 @@ impl Display {
             }
             #[cfg(feature = "gl")]
             Backend::Gl(w) => {
+                w.display(&self.canvas);
+            }
+            #[cfg(all(feature = "cocoa", target_os = "macos"))]
+            Backend::Cocoa(w) => {
                 w.display(&self.canvas);
             }
         }
@@ -546,6 +590,19 @@ impl Display {
             }
         }
 
+        #[cfg(all(feature = "cocoa", target_os = "macos"))]
+        {
+            let window_size = match &self.backend {
+                Backend::Cocoa(w) => Some(w.size()),
+                _ => None,
+            };
+            if let Some((w, h)) = window_size {
+                if w > 0 && h > 0 && (w != self.canvas.width() || h != self.canvas.height()) {
+                    self.apply_resize(w, h);
+                }
+            }
+        }
+
         // Constant framerate handling.
         let now = Instant::now();
         let mut ticks = self.lastticks + (now - self.frame_start).as_micros() as i64;
@@ -590,6 +647,8 @@ impl Display {
             Backend::X11(w) => w.get_event(&self.canvas, mask, timeout_us as i64),
             #[cfg(feature = "gl")]
             Backend::Gl(w) => w.get_event(mask, timeout_us as i64),
+            #[cfg(all(feature = "cocoa", target_os = "macos"))]
+            Backend::Cocoa(w) => w.get_event(mask, timeout_us as i64),
             Backend::Null | Backend::Raw => None,
         };
 
@@ -684,8 +743,15 @@ fn install_backend(canvas: &mut Canvas, driver: Driver) -> Result<Backend> {
             let win = gl::Gl::new(canvas)?;
             Backend::Gl(win)
         }
+        #[cfg(all(feature = "cocoa", target_os = "macos"))]
+        Driver::Cocoa => {
+            let win = cocoa::Cocoa::new(canvas)?;
+            Backend::Cocoa(win)
+        }
         #[cfg(all(feature = "std", not(feature = "gl")))]
         Driver::Gl => return Err(CacaError::Invalid),
+        #[cfg(all(feature = "std", not(all(feature = "cocoa", target_os = "macos"))))]
+        Driver::Cocoa => return Err(CacaError::Invalid),
     })
 }
 
