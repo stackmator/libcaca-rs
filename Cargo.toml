@@ -124,3 +124,7 @@ required-features = ["std"]
 name = "swallow"
 path = "examples/swallow.rs"
 required-features = ["std"]
+[[example]]
+name = "snake"
+path = "examples/snake.rs"
+required-features = ["std"]
