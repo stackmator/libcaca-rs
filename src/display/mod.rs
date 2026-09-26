@@ -11,6 +11,8 @@
 pub mod event;
 pub mod render;
 mod terminal;
+#[cfg(windows)]
+mod win32;
 
 pub use event::{key, Event, EventMask, KeyEvent};
 
@@ -21,10 +23,20 @@ use crate::canvas::Canvas;
 use crate::error::{CacaError, Result};
 
 /// The built-in display drivers.
+#[cfg(windows)]
 pub const DRIVER_LIST: &[(&str, &str)] = &[
+    ("win32", "Windows console"),
+    ("terminal", "ANSI terminal"),
     ("raw", "raw libcaca output"),
     ("null", "null driver"),
+];
+
+/// The built-in display drivers.
+#[cfg(not(windows))]
+pub const DRIVER_LIST: &[(&str, &str)] = &[
     ("terminal", "ANSI terminal"),
+    ("raw", "raw libcaca output"),
+    ("null", "null driver"),
 ];
 
 /// A display driver kind.
@@ -33,6 +45,7 @@ pub enum Driver {
     Null,
     Raw,
     Terminal,
+    Win32,
 }
 
 impl Driver {
@@ -42,6 +55,7 @@ impl Driver {
             Driver::Null => "null",
             Driver::Raw => "raw",
             Driver::Terminal => "terminal",
+            Driver::Win32 => "win32",
         }
     }
 
@@ -51,8 +65,34 @@ impl Driver {
             "null" => Some(Driver::Null),
             "raw" => Some(Driver::Raw),
             "terminal" | "ansi" => Some(Driver::Terminal),
+            "win32" => {
+                #[cfg(windows)]
+                {
+                    Some(Driver::Win32)
+                }
+                #[cfg(not(windows))]
+                {
+                    None
+                }
+            }
             _ => None,
         }
+    }
+}
+
+/// Choose the best available driver for the current process.
+fn autodetect_driver() -> Driver {
+    #[cfg(windows)]
+    {
+        if win32::has_console() {
+            return Driver::Win32;
+        }
+    }
+
+    if std::io::stdin().is_terminal() && std::io::stdout().is_terminal() {
+        Driver::Terminal
+    } else {
+        Driver::Null
     }
 }
 
@@ -60,6 +100,8 @@ enum Backend {
     Null,
     Raw,
     Terminal(terminal::Terminal),
+    #[cfg(windows)]
+    Win32(win32::Win32),
 }
 
 /// A libcaca display context.
@@ -99,13 +141,7 @@ impl Display {
 
         let driver = match name {
             Some(n) => Driver::from_name(&n).ok_or(CacaError::Invalid)?,
-            None => {
-                if std::io::stdin().is_terminal() && std::io::stdout().is_terminal() {
-                    Driver::Terminal
-                } else {
-                    Driver::Null
-                }
-            }
+            None => autodetect_driver(),
         };
 
         Display::build(canvas, driver)
@@ -184,6 +220,8 @@ impl Display {
     pub fn display_width(&self) -> i32 {
         match &self.backend {
             Backend::Terminal(t) => t.display_width(),
+            #[cfg(windows)]
+            Backend::Win32(w) => w.display_width(),
             Backend::Null | Backend::Raw => self.canvas.width(),
         }
     }
@@ -192,6 +230,8 @@ impl Display {
     pub fn display_height(&self) -> i32 {
         match &self.backend {
             Backend::Terminal(t) => t.display_height(),
+            #[cfg(windows)]
+            Backend::Win32(w) => w.display_height(),
             Backend::Null | Backend::Raw => self.canvas.height(),
         }
     }
@@ -201,6 +241,11 @@ impl Display {
         match &mut self.backend {
             Backend::Terminal(t) => {
                 t.set_title(title);
+                Ok(())
+            }
+            #[cfg(windows)]
+            Backend::Win32(w) => {
+                w.set_title(title);
                 Ok(())
             }
             _ => Err(CacaError::NotImplemented),
@@ -253,7 +298,31 @@ impl Display {
         if let Backend::Terminal(t) = &mut self.backend {
             t.end();
         }
+        #[cfg(windows)]
+        if let Backend::Win32(w) = &mut self.backend {
+            w.end();
+        }
         self.backend = Backend::Null;
+    }
+
+    fn apply_resize(&mut self, w: i32, h: i32) {
+        if w <= 0 || h <= 0 {
+            return;
+        }
+        if w == self.canvas.width() && h == self.canvas.height() {
+            return;
+        }
+
+        self.resize_allow = true;
+        let _ = self.canvas.set_size(w, h);
+        self.resize_allow = false;
+
+        match &mut self.backend {
+            Backend::Terminal(t) => t.handle_resize(),
+            #[cfg(windows)]
+            Backend::Win32(win) => win.handle_resize(&self.canvas),
+            _ => {}
+        }
     }
 
     /// Flush pending changes and redraw the screen.
@@ -269,18 +338,37 @@ impl Display {
             Backend::Terminal(t) => {
                 t.display(&self.canvas);
             }
+            #[cfg(windows)]
+            Backend::Win32(w) => {
+                w.display(&self.canvas);
+            }
         }
 
         self.canvas.clear_dirty_rect_list();
 
         // Re-synchronise the canvas with the terminal after a resize.
-        if let Backend::Terminal(t) = &mut self.backend {
-            let (w, h) = (t.display_width(), t.display_height());
+        let terminal_size = match &self.backend {
+            Backend::Terminal(t) => Some((t.display_width(), t.display_height())),
+            _ => None,
+        };
+        if let Some((w, h)) = terminal_size {
             if w > 0 && h > 0 && (w != self.canvas.width() || h != self.canvas.height()) {
-                self.resize_allow = true;
-                let _ = self.canvas.set_size(w, h);
-                self.resize_allow = false;
-                t.handle_resize();
+                self.apply_resize(w, h);
+            }
+        }
+
+        // The Win32 console reports resizes as events, but also poll its
+        // window size so a resize is not missed.
+        #[cfg(windows)]
+        {
+            let console_size = match &self.backend {
+                Backend::Win32(w) => Some(w.size()),
+                _ => None,
+            };
+            if let Some((w, h)) = console_size {
+                if w > 0 && h > 0 && (w != self.canvas.width() || h != self.canvas.height()) {
+                    self.apply_resize(w, h);
+                }
             }
         }
 
@@ -320,6 +408,8 @@ impl Display {
 
         let ev = match &mut self.backend {
             Backend::Terminal(t) => t.get_event(mask, timeout_us as i64),
+            #[cfg(windows)]
+            Backend::Win32(w) => w.get_event(&self.canvas, mask, timeout_us as i64),
             Backend::Null | Backend::Raw => None,
         };
 
@@ -386,6 +476,13 @@ fn install_backend(canvas: &mut Canvas, driver: Driver) -> Result<Backend> {
             }
             Backend::Terminal(term)
         }
+        #[cfg(windows)]
+        Driver::Win32 => {
+            let win = win32::Win32::new(canvas)?;
+            Backend::Win32(win)
+        }
+        #[cfg(not(windows))]
+        Driver::Win32 => return Err(CacaError::Invalid),
     })
 }
 

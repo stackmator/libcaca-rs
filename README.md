@@ -52,15 +52,19 @@ assert_eq!(cv.get_char(2, 2), b'H' as u32);
 
 ## Display drivers
 
-| Driver     | Description                                    |
-| ---------- | ---------------------------------------------- |
-| `terminal` | ANSI/VT terminal with raw-mode input and resize |
-| `raw`      | writes the native `caca` binary stream to stdout |
-| `null`     | no output (headless rendering / tests)          |
+| Driver     | Description                                        |
+| ---------- | -------------------------------------------------- |
+| `win32`    | native Win32 console (Unicode, mouse) — Windows only |
+| `terminal` | ANSI/VT terminal with raw-mode input and resize     |
+| `raw`      | writes the native `caca` binary stream to stdout     |
+| `null`     | no output (headless rendering / tests)              |
 
 The `terminal` driver uses the alternate screen, true colour when available,
 and decodes ANSI/SGR input. On Unix it uses `termios`; on Windows it enables
-virtual-terminal processing through the Win32 console API.
+virtual-terminal processing through the Win32 console API. The `win32` driver
+is a faithful port of libcaca's console driver: it writes a `CHAR_INFO` screen
+buffer with `WriteConsoleOutputW` and reads `INPUT_RECORD`s (`ReadConsoleInput`),
+with no ANSI sequences involved.
 
 ```rust,no_run
 use libcaca::{Canvas, Color, Display, EventMask};
@@ -84,9 +88,10 @@ loop {
 
 The port covers the bulk of libcaca's public API (canvas, attributes, charset,
 primitives, transforms, frames, codecs, dithering, bitmap fonts, FIGlet/TOIlet
-fonts, display/events and the DOS `conio` layer). Not yet ported: the
-plugin-based windowing drivers (X11/GL/cocoa/win32/VGA) and the `file`/`getopt`
-helpers that are unnecessary in idiomatic Rust.
+fonts, display/events, the Win32 console driver and the DOS `conio` layer).
+Not yet ported: the graphical window drivers (X11/GL/cocoa/VGA), the zlib-backed
+`caca_file_*` compressed I/O and the `caca_getopt` helper, all of which are
+either platform-specific or unnecessary in idiomatic Rust.
 
 See `examples/` for runnable programs.
 
