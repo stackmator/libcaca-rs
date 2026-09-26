@@ -1,7 +1,7 @@
 //! Canvas transformations: invert, flip, flop, rotate and stretch.
 //!
 //! Port of `caca/transform.c`. The large character lookup tables are
-//! generated from the C source into [`crate::transform_tables`].
+//! generated from the C source into the private `transform_tables` module.
 
 use alloc::vec;
 
