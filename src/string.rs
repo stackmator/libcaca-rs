@@ -403,6 +403,41 @@ mod tests {
     }
 
     #[test]
+    fn chars_survive_resize() {
+        let mut cv = Canvas::new(0, 0).unwrap();
+        assert_eq!(cv.get_char(0, 0), b' ' as u32);
+
+        cv.put_char(0, 0, b'x' as u32);
+        assert_eq!(cv.get_char(0, 0), b' ' as u32);
+
+        cv.set_size(1, 1).unwrap();
+        assert_eq!(cv.get_char(0, 0), b' ' as u32);
+
+        cv.put_char(0, 0, b'x' as u32);
+        assert_eq!(cv.get_char(0, 0), b'x' as u32);
+
+        cv.put_char(0, 0, b'y' as u32);
+        assert_eq!(cv.get_char(0, 0), b'y' as u32);
+
+        cv.set_size(1000, 1000).unwrap();
+        assert_eq!(cv.get_char(999, 999), b' ' as u32);
+
+        cv.put_char(999, 999, b'z' as u32);
+        assert_eq!(cv.get_char(999, 999), b'z' as u32);
+    }
+
+    #[test]
+    fn truncated_multibyte_leader_is_safe() {
+        // The C suite feeds a lone 0xF0 byte (the leader of a 4-byte
+        // sequence). Rust strings cannot hold that, so the closest
+        // equivalent is a genuine 4-byte character, which must be stored
+        // without panic.
+        let mut cv = Canvas::new(10, 10).unwrap();
+        assert_eq!(cv.put_str(0, 0, "\u{1f600}"), 1);
+        assert_eq!(cv.get_char(0, 0), 0x1f600);
+    }
+
+    #[test]
     fn fullwidth_marks_second_cell() {
         let mut cv = Canvas::new(8, 1).unwrap();
         assert_eq!(cv.put_char(0, 0, 0x3000), 2);

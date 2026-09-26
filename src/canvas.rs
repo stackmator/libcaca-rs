@@ -297,7 +297,27 @@ mod tests {
     }
 
     #[test]
-    fn invalid_size() {
+    fn resize_rejects_bad_sizes() {
+        let mut cv = Canvas::new(0, 0).unwrap();
+        assert_eq!((cv.width(), cv.height()), (0, 0));
+
+        cv.set_size(1, 1).unwrap();
+        assert_eq!((cv.width(), cv.height()), (1, 1));
+
+        cv.set_size(1234, 1001).unwrap();
+        assert_eq!((cv.width(), cv.height()), (1234, 1001));
+
+        cv.set_size(0, 0).unwrap();
+        assert_eq!((cv.width(), cv.height()), (0, 0));
+
+        assert!(cv.set_size(-1, 50).is_err());
+        assert!(cv.set_size(50, -1).is_err());
+        assert!(cv.set_size(-1, -1).is_err());
+        assert!(cv.set_size(i32::MAX / 2, 3).is_err());
+        assert!(cv.set_size(3, i32::MAX / 2).is_err());
+        assert!(cv.set_size(i32::MAX / 2, i32::MAX / 2).is_err());
+        cv.set_size(0, 0).unwrap();
+
         assert!(Canvas::new(-1, 0).is_err());
     }
 }

@@ -527,6 +527,29 @@ mod tests {
     use super::*;
 
     #[test]
+    fn flip_mirrors_layout() {
+        let mut cv = Canvas::new(3, 2).unwrap();
+
+        cv.put_char(0, 0, b'A' as u32);
+        cv.put_char(1, 0, b'H' as u32);
+        cv.put_char(2, 0, b'M' as u32);
+
+        cv.put_char(0, 1, b'(' as u32);
+        cv.put_char(1, 1, b' ' as u32);
+        cv.put_char(2, 1, b' ' as u32);
+
+        cv.flip();
+
+        assert_eq!(cv.get_char(0, 0), b'M' as u32);
+        assert_eq!(cv.get_char(1, 0), b'H' as u32);
+        assert_eq!(cv.get_char(2, 0), b'A' as u32);
+
+        assert_eq!(cv.get_char(0, 1), b' ' as u32);
+        assert_eq!(cv.get_char(1, 1), b' ' as u32);
+        assert_eq!(cv.get_char(2, 1), b')' as u32);
+    }
+
+    #[test]
     fn flip_is_involutive_ascii() {
         let mut cv = Canvas::new(4, 1).unwrap();
         cv.put_str(0, 0, "abcd");

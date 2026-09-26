@@ -239,3 +239,165 @@ impl Canvas {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const WIDTH: i32 = 80;
+    const HEIGHT: i32 = 50;
+    /// U+2F06 (`⼆`), the wide character used by the C suite.
+    const WIDE: u32 = 0x2f06;
+
+    fn rect(cv: &Canvas) -> (i32, i32, i32, i32) {
+        assert_eq!(cv.dirty_rect_count(), 1);
+        cv.dirty_rect(0).unwrap()
+    }
+
+    #[test]
+    fn create_has_one_full_canvas_rect() {
+        let mut cv = Canvas::new(WIDTH, HEIGHT).unwrap();
+
+        // Check that we only have one dirty rectangle upon creation.
+        assert_eq!(cv.dirty_rect_count(), 1);
+
+        // Check that our only rectangle contains the whole canvas.
+        assert_eq!(cv.dirty_rect(0).unwrap(), (0, 0, WIDTH, HEIGHT));
+
+        // Invalidate the dirty rectangle and check that it stays so.
+        cv.clear_dirty_rect_list();
+        assert_eq!(cv.dirty_rect_count(), 0);
+    }
+
+    #[test]
+    fn put_char_dirty() {
+        let mut cv = Canvas::new(WIDTH, HEIGHT).unwrap();
+
+        // Check that one character creates a 1x1 dirty rect.
+        cv.clear_dirty_rect_list();
+        cv.put_char(7, 3, b'x' as u32);
+        assert_eq!(rect(&cv), (7, 3, 1, 1));
+
+        // Check that a fullwidth character creates a 2x1 dirty rect.
+        cv.clear();
+        cv.clear_dirty_rect_list();
+        cv.put_char(7, 3, WIDE);
+        assert_eq!(rect(&cv), (7, 3, 2, 1));
+
+        // Check that a character over a fullwidth character creates a
+        // 2x1 dirty rect because of clobbering on the left side.
+        cv.clear();
+        cv.put_char(7, 3, WIDE);
+        cv.clear_dirty_rect_list();
+        cv.put_char(7, 3, b'x' as u32);
+        assert_eq!(rect(&cv), (7, 3, 2, 1));
+
+        // Check that a character over a fullwidth character creates a
+        // 2x1 dirty rect because of clobbering on the right side.
+        cv.clear();
+        cv.put_char(7, 3, WIDE);
+        cv.clear_dirty_rect_list();
+        cv.put_char(8, 3, b'x' as u32);
+        assert_eq!(rect(&cv), (7, 3, 2, 1));
+
+        // Check that a fullwidth character over a fullwidth character
+        // creates a 3x1 dirty rect because of clobbering on the left side.
+        cv.clear();
+        cv.put_char(7, 3, WIDE);
+        cv.clear_dirty_rect_list();
+        cv.put_char(6, 3, WIDE);
+        assert_eq!(rect(&cv), (6, 3, 3, 1));
+
+        // Check that a fullwidth character over a fullwidth character
+        // creates a 3x1 dirty rect because of clobbering on the right side.
+        cv.clear();
+        cv.put_char(7, 3, WIDE);
+        cv.clear_dirty_rect_list();
+        cv.put_char(8, 3, WIDE);
+        assert_eq!(rect(&cv), (7, 3, 3, 1));
+    }
+
+    #[test]
+    fn put_char_not_dirty() {
+        let mut cv = Canvas::new(WIDTH, HEIGHT).unwrap();
+
+        // Check that pasting the same character does not create a dirty
+        // rectangle.
+        cv.put_char(7, 3, b'x' as u32);
+        cv.clear_dirty_rect_list();
+        cv.put_char(7, 3, b'x' as u32);
+        assert_eq!(cv.dirty_rect_count(), 0);
+
+        // Check that pasting the same fullwidth character does not create
+        // a dirty rectangle.
+        cv.clear();
+        cv.put_char(7, 3, WIDE);
+        cv.clear_dirty_rect_list();
+        cv.put_char(7, 3, WIDE);
+        assert_eq!(cv.dirty_rect_count(), 0);
+    }
+
+    #[test]
+    fn simplify_merges_adjacent() {
+        let mut cv = Canvas::new(WIDTH, HEIGHT).unwrap();
+
+        // Check that N adjacent horizontal blits make one dirty rectangle.
+        cv.clear_dirty_rect_list();
+        for i in 0..10 {
+            cv.put_char(7 + i, 3, b'-' as u32);
+            assert_eq!(rect(&cv), (7, 3, 1 + i, 1));
+        }
+
+        // Check that N adjacent vertical blits make one dirty rectangle.
+        cv.clear_dirty_rect_list();
+        for j in 0..10 {
+            cv.put_char(7, 3 + j, b'|' as u32);
+            assert_eq!(rect(&cv), (7, 3, 1, 1 + j));
+        }
+    }
+
+    #[test]
+    fn fill_box_rect() {
+        let mut cv = Canvas::new(WIDTH, HEIGHT).unwrap();
+        cv.clear_dirty_rect_list();
+
+        // Check that a filled box creates one dirty rectangle of the
+        // same size.
+        cv.fill_box(7, 3, 14, 9, b'x' as u32);
+        assert_eq!(rect(&cv), (7, 3, 14, 9));
+
+        // Check that the same filled box creates no new dirty rectangle.
+        cv.clear_dirty_rect_list();
+        cv.fill_box(7, 3, 14, 9, b'x' as u32);
+        assert_eq!(cv.dirty_rect_count(), 0);
+    }
+
+    #[test]
+    fn blit_rect() {
+        let mut cv = Canvas::new(WIDTH, HEIGHT).unwrap();
+        cv.clear_dirty_rect_list();
+        let mut cv2 = Canvas::new(2, 2).unwrap();
+        cv2.fill_box(0, 0, 2, 1, b'x' as u32);
+
+        // Check that blitting a canvas makes a dirty rectangle only for
+        // modified lines (the C test questions its own validity here too).
+        cv.blit(1, 1, &cv2, None).unwrap();
+        assert_eq!(cv.dirty_rect_count(), 1);
+        let (dx, dy, dw, dh) = cv.dirty_rect(0).unwrap();
+        assert_eq!((dx, dy), (1, 1));
+        assert!(dw >= 2);
+        assert_eq!(dh, 1);
+
+        cv.clear();
+        cv.clear_dirty_rect_list();
+
+        // Check that blitting a canvas makes a dirty rectangle only for
+        // modified chars when we have a mask.
+        cv.blit(1, 1, &cv2, Some(&cv2)).unwrap();
+        assert_eq!(cv.dirty_rect_count(), 1);
+        let (dx, dy, dw, dh) = cv.dirty_rect(0).unwrap();
+        assert_eq!((dx, dy, dw, dh), (1, 1, 2, 1));
+
+        assert_eq!(cv.get_char(0, 0), b' ' as u32);
+    }
+}

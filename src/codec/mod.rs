@@ -250,6 +250,33 @@ mod tests {
     }
 
     #[test]
+    fn area_roundtrip_clips_to_area() {
+        // Exact port of the C `test_export_area_caca`: (10, 3) and (5, 5)
+        // lie outside the exported 10x5 area, so they come back blank.
+        let mut cv = Canvas::new(80, 50).unwrap();
+        cv.put_char(7, 3, b'a' as u32);
+        cv.put_char(10, 3, b'b' as u32);
+        cv.put_char(5, 5, b'c' as u32);
+        let data = cv.export_area_to_memory(0, 0, 10, 5, "caca").unwrap();
+        assert!(!data.is_empty());
+
+        cv.clear();
+        let used = cv.import_area_from_memory(0, 0, &data, "caca").unwrap();
+        assert_eq!(used, data.len());
+        assert_eq!(cv.get_char(7, 3), b'a' as u32);
+        assert_eq!(cv.get_char(10, 3), b' ' as u32);
+        assert_eq!(cv.get_char(5, 5), b' ' as u32);
+
+        cv.put_char(10, 3, b'b' as u32);
+        cv.put_char(5, 5, b'c' as u32);
+        let used = cv.import_area_from_memory(0, 0, &data, "caca").unwrap();
+        assert_eq!(used, data.len());
+        assert_eq!(cv.get_char(7, 3), b'a' as u32);
+        assert_eq!(cv.get_char(10, 3), b'b' as u32);
+        assert_eq!(cv.get_char(5, 5), b'c' as u32);
+    }
+
+    #[test]
     fn area_roundtrip() {
         let mut cv = Canvas::new(10, 5).unwrap();
         cv.put_char(7, 3, b'a' as u32);

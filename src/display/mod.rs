@@ -800,6 +800,12 @@ mod tests {
     }
 
     #[test]
+    fn driver_list_is_nonempty() {
+        assert!(!DRIVER_LIST.is_empty());
+        assert!(!DRIVER_LIST[0].0.is_empty());
+    }
+
+    #[test]
     fn toggle_driver() {
         let cv = Canvas::new(8, 8).unwrap();
         let mut dp = Display::with_driver(cv, Some("null")).unwrap();
