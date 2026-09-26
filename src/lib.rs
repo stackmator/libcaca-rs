@@ -48,6 +48,8 @@ pub mod display;
 pub mod dither;
 pub mod error;
 pub mod figfont;
+#[cfg(feature = "std")]
+pub mod file;
 pub mod font;
 pub mod frame;
 pub mod getopt;
@@ -69,4 +71,6 @@ pub use display::{Display, Driver};
 pub use dither::Dither;
 pub use error::{CacaError, Result};
 pub use figfont::FigFont;
+#[cfg(feature = "std")]
+pub use file::File;
 pub use font::Font;

@@ -36,7 +36,7 @@ impl Canvas {
     /// Requires the `std` feature.
     #[cfg(feature = "std")]
     pub fn import_from_file(&mut self, path: &std::path::Path, format: &str) -> Result<usize> {
-        let data = std::fs::read(path).map_err(|_| CacaError::Invalid)?;
+        let data = crate::file::read_all(path)?;
         self.import_from_memory(&data, format)
     }
 
@@ -69,7 +69,7 @@ impl Canvas {
         path: &std::path::Path,
         format: &str,
     ) -> Result<usize> {
-        let data = std::fs::read(path).map_err(|_| CacaError::Invalid)?;
+        let data = crate::file::read_all(path)?;
         self.import_area_from_memory(x, y, &data, format)
     }
 

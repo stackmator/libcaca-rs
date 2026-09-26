@@ -96,7 +96,7 @@ impl FigFont {
 
         let mut last_err = CacaError::Invalid;
         for candidate in candidates {
-            match std::fs::read(&candidate) {
+            match crate::file::read_all(&candidate) {
                 Ok(data) => return FigFont::from_bytes(&data),
                 Err(_) => last_err = CacaError::Invalid,
             }

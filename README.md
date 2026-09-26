@@ -51,6 +51,10 @@ assert_eq!(cv.get_char(2, 2), b'H' as u32);
   `cprintf`, `getch`/`getche`/`getpass`, `kbhit`/`ungetch`, colours and delays).
 - **Option parsing** — an idiomatic [`Getopt`](src/getopt.rs) port of
   `caca_getopt`, handling short-option bundles and `--long[=arg]` options.
+- **File I/O** — a [`File`](src/file.rs) port of `caca_file_*` (open, read,
+  write, tell, gets, eof). The opt-in `compression` feature adds transparent
+  gzip and first-file-ZIP decompression via pure-Rust `flate2`, mirroring
+  `HAVE_ZLIB_H`; importers and the FIGfont loader use it automatically.
 - **Pre-1.0 compatibility** — an opt-in [`Compat`](src/compat.rs) type
   (`compat` cargo feature, off by default) covering the deprecated `caca0`
   API: old event encoding, features, sprites, bitmaps, colours and the full
@@ -120,10 +124,10 @@ cargo test --no-default-features
 The port covers the bulk of libcaca's public API (canvas, attributes, charset,
 primitives, transforms, frames, codecs, dithering, bitmap fonts, FIGlet/TOIlet
 fonts, display/events, the Win32 console driver, a `winit` graphical window
-driver, the DOS `conio` layer and option parsing). Not yet ported: the native
-GUI drivers that need a display server or GPU stack (X11/GL/cocoa/VGA — the
-`winit` driver covers that class portably instead), the deprecated pre-1.0
-`caca0` glue and the zlib-backed `caca_file_*` compressed I/O.
+driver, the DOS `conio` layer, option parsing, file I/O with transparent
+decompression and the `compat` pre-1.0 shim). Not yet ported: the native GUI
+drivers that need a display server or GPU stack (X11/GL/cocoa/VGA — the
+`winit` driver covers that class portably instead).
 
 Runnable programs live in `examples/`: `hello` (animated terminal demo),
 `transform` (a port of libcaca's sprite/transform demo), `event` (a port of

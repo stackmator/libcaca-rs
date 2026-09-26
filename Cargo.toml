@@ -28,10 +28,14 @@ gui = ["std", "dep:winit", "dep:softbuffer"]
 # `compat` adds the deprecated pre-1.0 compatibility layer (`Compat`). Opt-in
 # so programs that do not need the legacy API pay nothing for it.
 compat = ["std"]
+# `compression` enables transparent gzip/ZIP decompression in the `file`
+# module (mirroring HAVE_ZLIB_H), backed by pure-Rust flate2 with no C code.
+compression = ["std", "dep:flate2"]
 
 [dependencies]
 winit = { version = "0.30", optional = true }
 softbuffer = { version = "0.4", optional = true }
+flate2 = { version = "1", optional = true, default-features = false, features = ["rust_backend"] }
 
 [target.'cfg(unix)'.dependencies]
 libc = { version = "0.2", optional = true }
