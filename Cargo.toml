@@ -150,6 +150,10 @@ name = "demo"
 path = "examples/demo.rs"
 required-features = ["std"]
 [[example]]
+name = "demo0"
+path = "examples/demo0.rs"
+required-features = ["compat"]
+[[example]]
 name = "import"
 path = "examples/import.rs"
 required-features = ["std"]
