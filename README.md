@@ -105,8 +105,9 @@ server, GPU or macOS hardware at runtime to verify visually.
 The `x11` driver (opt-in `x11` feature, Unix only) is a native port of
 libcaca's X11 driver over pure-Rust `x11rb`: server-side core fonts,
 vector box-drawing, dirty-rectangle rendering and full event handling
-(keys via a US-layout table plus keycodes, mouse, resize, close). Like the
-other drivers it is never autodetected — request `x11` explicitly.
+(keys via a US-layout table plus keycodes, mouse motion/buttons/wheel,
+XFixes cursor hiding, resize, close). Like the other drivers it is never
+autodetected — request `x11` explicitly.
 
 ```rust,no_run
 use libcaca::{Canvas, Color, Display, EventMask};

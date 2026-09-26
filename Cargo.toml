@@ -56,7 +56,7 @@ flate2 = { version = "1", optional = true, default-features = false, features = 
 
 [target.'cfg(unix)'.dependencies]
 libc = { version = "0.2", optional = true }
-x11rb = { version = "0.13", optional = true }
+x11rb = { version = "0.13", optional = true, features = ["xfixes"] }
 
 [target.'cfg(windows)'.dependencies]
 windows-sys = { version = "0.59", optional = true, features = [

@@ -18,7 +18,7 @@
 
 use std::time::{Duration, Instant};
 
-use x11rb::connection::Connection;
+use x11rb::connection::{Connection, RequestConnection};
 use x11rb::protocol::xproto::{
     Atom, ChangeGCAux, ChangeWindowAttributesAux, Char2b, CreateGCAux, CreateWindowAux, EventMask,
     Font as XFont, Gcontext, Pixmap, Point, PropMode, QueryFontReply, Rectangle, Window,
@@ -61,6 +61,7 @@ pub struct X11 {
     wm_protocols: Atom,
     wm_delete_window: Atom,
     wm_name: Atom,
+    xfixes: bool,
     cols: i32,
     rows: i32,
     mouse: (i32, i32),
@@ -89,6 +90,13 @@ impl X11 {
         }
 
         let (conn, screen_num) = x11rb::connect(None).map_err(|_| CacaError::Invalid)?;
+
+        // Cursor hiding needs the XFixes extension; remember availability
+        // instead of failing when it is absent.
+        let xfixes = conn
+            .extension_information("XFIXES")
+            .map(|info| info.is_some())
+            .unwrap_or(false);
 
         // Clamp the canvas like the C version, then resize below.
         let _ = canvas.set_size(width, height);
@@ -235,6 +243,7 @@ impl X11 {
             wm_protocols,
             wm_delete_window,
             wm_name,
+            xfixes,
             cols: width,
             rows: height,
             mouse: (width / 2, height / 2),
@@ -701,13 +710,20 @@ impl X11 {
         let _ = self.conn.flush();
     }
 
-    /// Show or hide the mouse pointer.
-    ///
-    /// Currently unimplemented: hiding the cursor needs raw cursor-creation
-    /// requests that x11rb 0.13 does not expose publicly. Mouse motion and
-    /// buttons work regardless.
-    pub fn set_mouse(&mut self, _show: bool) -> Result<()> {
-        Err(CacaError::NotImplemented)
+    /// Show or hide the mouse pointer via the XFixes extension.
+    pub fn set_mouse(&mut self, show: bool) -> Result<()> {
+        if !self.xfixes {
+            return Err(CacaError::NotImplemented);
+        }
+        if show {
+            x11rb::protocol::xfixes::show_cursor(&self.conn, self.window)
+                .map_err(|_| CacaError::Invalid)?;
+        } else {
+            x11rb::protocol::xfixes::hide_cursor(&self.conn, self.window)
+                .map_err(|_| CacaError::Invalid)?;
+        }
+        self.conn.flush().map_err(|_| CacaError::Invalid)?;
+        Ok(())
     }
 
     /// Show or hide the block cursor (drawn on the next refresh).
