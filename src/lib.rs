@@ -38,6 +38,8 @@ pub mod boxdraw;
 pub mod canvas;
 pub mod charset;
 pub mod codec;
+#[cfg(feature = "compat")]
+pub mod compat;
 pub mod conic;
 #[cfg(feature = "std")]
 pub mod conio;
@@ -57,6 +59,8 @@ pub mod triangle;
 
 pub use attr::{Attr, Color, Style};
 pub use canvas::{rand, Canvas, CACA_MAGIC_FULLWIDTH};
+#[cfg(feature = "compat")]
+pub use compat::Compat;
 #[cfg(feature = "std")]
 pub use conio::Conio;
 pub use display::{key, Event, EventMask, KeyEvent};

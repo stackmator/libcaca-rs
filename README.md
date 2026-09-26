@@ -51,6 +51,10 @@ assert_eq!(cv.get_char(2, 2), b'H' as u32);
   `cprintf`, `getch`/`getche`/`getpass`, `kbhit`/`ungetch`, colours and delays).
 - **Option parsing** — an idiomatic [`Getopt`](src/getopt.rs) port of
   `caca_getopt`, handling short-option bundles and `--long[=arg]` options.
+- **Pre-1.0 compatibility** — an opt-in [`Compat`](src/compat.rs) type
+  (`compat` cargo feature, off by default) covering the deprecated `caca0`
+  API: old event encoding, features, sprites, bitmaps, colours and the full
+  old drawing vocabulary, so legacy programs port without rewriting.
 
 ## Display drivers
 

@@ -25,6 +25,9 @@ std = ["dep:libc", "dep:windows-sys"]
 # crates (winit for windowing/input, softbuffer for presentation). It implies
 # `std` and is deliberately opt-in so headless builds stay dependency-free.
 gui = ["std", "dep:winit", "dep:softbuffer"]
+# `compat` adds the deprecated pre-1.0 compatibility layer (`Compat`). Opt-in
+# so programs that do not need the legacy API pay nothing for it.
+compat = ["std"]
 
 [dependencies]
 winit = { version = "0.30", optional = true }
