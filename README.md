@@ -56,6 +56,7 @@ assert_eq!(cv.get_char(2, 2), b'H' as u32);
 
 | Driver     | Description                                        |
 | ---------- | -------------------------------------------------- |
+| `winit`    | graphical window (`gui` feature)                    |
 | `win32`    | native Win32 console (Unicode, mouse) — Windows only |
 | `terminal` | ANSI/VT terminal with raw-mode input and resize     |
 | `raw`      | writes the native `caca` binary stream to stdout     |
@@ -67,6 +68,13 @@ virtual-terminal processing through the Win32 console API. The `win32` driver
 is a faithful port of libcaca's console driver: it writes a `CHAR_INFO` screen
 buffer with `WriteConsoleOutputW` and reads `INPUT_RECORD`s (`ReadConsoleInput`),
 with no ANSI sequences involved.
+
+The `winit` driver (opt-in `gui` feature) is the pure-Rust answer to libcaca's
+X11/GL window drivers: `winit` opens the window and feeds keyboard, mouse and
+resize events, `softbuffer` presents the canvas rasterised with the built-in
+bitmap font — no C libraries involved. It is never autodetected; request it
+explicitly (`Display::with_driver(cv, Some("winit"))`) or set
+`CACA_DRIVER=winit`. See `examples/gui.rs`.
 
 ```rust,no_run
 use libcaca::{Canvas, Color, Display, EventMask};
@@ -92,8 +100,9 @@ Without the default `std` feature the crate is `no_std` + `alloc`: the canvas,
 codec, dither, font, event-parsing and ANSI-rendering core keeps working, which
 suits embedded or `wasm` targets. The OS-interactive layer needs `std` and is
 gated behind the feature: display drivers (`Display`, `Driver`), the `Conio`
-console, file-based helpers (`import_from_file`, `FigFont::load`) and
-wall-clock framerate timing. `rand` stays available but is deterministically
+console, file-based helpers (`import_from_file`, `FigFont::load`),
+wall-clock framerate timing and the opt-in `gui` window driver. `rand` stays
+available but is deterministically
 seeded without a clock. The pure `text` and `font2tga` examples build without
 `std`; the rest require it.
 
@@ -106,10 +115,11 @@ cargo test --no-default-features
 
 The port covers the bulk of libcaca's public API (canvas, attributes, charset,
 primitives, transforms, frames, codecs, dithering, bitmap fonts, FIGlet/TOIlet
-fonts, display/events, the Win32 console driver, the DOS `conio` layer and option
-parsing). Not yet ported: the graphical window drivers (X11/GL/cocoa/VGA) and
-the zlib-backed `caca_file_*` compressed I/O, which are platform-specific or
-need an external compression dependency.
+fonts, display/events, the Win32 console driver, a `winit` graphical window
+driver, the DOS `conio` layer and option parsing). Not yet ported: the native
+GUI drivers that need a display server or GPU stack (X11/GL/cocoa/VGA — the
+`winit` driver covers that class portably instead), the deprecated pre-1.0
+`caca0` glue and the zlib-backed `caca_file_*` compressed I/O.
 
 Runnable programs live in `examples/`: `hello` (animated terminal demo),
 `transform` (a port of libcaca's sprite/transform demo), `event` (a port of
@@ -129,7 +139,8 @@ dithering under a moving mask), `mouse` (mouse tracking and buttons),
 (the flagship animated menu: dots, lines, boxes, triangles, ellipses and a
 dithered render), `import` (file viewer), `spritedit` (multi-frame sprite
 round-trip), `input` (Unicode text-entry editor), `swallow` (a multiplexer
-tiling four child `caca` streams) and `snake` (the conio snake game).
+tiling four child `caca` streams), `snake` (the conio snake game) and `gui`
+(the graphical window demo, needs `--features gui`).
 Unit tests live alongside the modules; `tests/canvas_api.rs` ports the C API
 stress test. Set `CACA_DRIVER=null` to run the examples headlessly.
 

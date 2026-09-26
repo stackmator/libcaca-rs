@@ -21,8 +21,14 @@ default = ["std"]
 # crate is `no_std` + `alloc`: the full canvas, codec, dither, font and
 # rendering core keeps working (e.g. for embedded or wasm targets).
 std = ["dep:libc", "dep:windows-sys"]
+# `gui` adds a cross-platform graphical window driver built only from pure-Rust
+# crates (winit for windowing/input, softbuffer for presentation). It implies
+# `std` and is deliberately opt-in so headless builds stay dependency-free.
+gui = ["std", "dep:winit", "dep:softbuffer"]
 
 [dependencies]
+winit = { version = "0.30", optional = true }
+softbuffer = { version = "0.4", optional = true }
 
 [target.'cfg(unix)'.dependencies]
 libc = { version = "0.2", optional = true }
@@ -128,3 +134,7 @@ required-features = ["std"]
 name = "snake"
 path = "examples/snake.rs"
 required-features = ["std"]
+[[example]]
+name = "gui"
+path = "examples/gui.rs"
+required-features = ["gui"]
