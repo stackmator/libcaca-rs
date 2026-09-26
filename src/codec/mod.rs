@@ -80,6 +80,7 @@ impl Canvas {
             "irc" => Ok(text::export_irc(self)),
             "ps" => Ok(image::export_ps(self)),
             "svg" => Ok(image::export_svg(self)),
+            "tga" => image::export_tga(self),
             "troff" => Ok(html::export_troff(self)),
             _ => Err(CacaError::Invalid),
         }
@@ -146,7 +147,7 @@ pub fn import_list() -> &'static [&'static str] {
 pub fn export_list() -> &'static [&'static str] {
     &[
         "caca", "ansi", "utf8", "utf8cr", "text", "html", "html3", "html5", "bbfr", "irc", "ps",
-        "svg", "troff",
+        "svg", "tga", "troff",
     ]
 }
 
@@ -227,8 +228,12 @@ mod tests {
         assert!(!cv.export_to_memory("ps").unwrap().is_empty());
         assert!(!cv.export_to_memory("svg").unwrap().is_empty());
 
+        let tga = cv.export_to_memory("tga").unwrap();
+        assert!(tga.len() > 18);
+        assert_eq!(tga[2], 2); // uncompressed truecolour
+        assert_eq!(tga[16], 32); // pixel depth
+
         assert!(cv.export_to_memory("nope").is_err());
-        assert!(cv.export_to_memory("tga").is_err());
     }
 
     #[test]
@@ -275,5 +280,6 @@ mod tests {
         assert!(export_list().contains(&"caca"));
         assert!(export_list().contains(&"html3"));
         assert!(export_list().contains(&"svg"));
+        assert!(export_list().contains(&"tga"));
     }
 }

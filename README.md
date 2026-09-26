@@ -36,14 +36,19 @@ assert_eq!(cv.get_char(2, 2), b'H' as u32);
   `stretch_left/right`, with the original character-mirroring lookup tables.
 - **Frames** — create/free/select/rename animation frames.
 - **Import/export codecs** — native `caca`, `text`, `ansi`, `utf8`, `bin`; export
-  to `html`, `html3`, `html5`, `bbfr`, `irc`, `ps`, `svg`, `troff`, and more.
+  to `html`, `html3`, `html5`, `bbfr`, `irc`, `ps`, `svg`, `tga`, `troff`.
 - **Dithering** — 8/16/24/32-bit pixel sources, palette and mask formats,
   ordered/random/Floyd–Steinberg kernels, mono/gray/8/16/full colour modes.
 - **Fonts** — load libcaca-format bitmap fonts (two built-in fonts are embedded)
   and rasterise a canvas to a 32-bit ARGB image buffer.
+- **FIGfonts** — load FIGlet/TOIlet `.flf`/`.tlf` fonts with all horizontal
+  smushing rules, kern/smush/overlap modes, wrapping and hardblank handling.
 - **Display & events** — display contexts with `null`, `raw` (native binary to
   stdout) and `terminal` (ANSI/VT) drivers; raw-mode input and an event parser
   for keys, mouse (SGR) and resize.
+- **DOS `conio` layer** — an idiomatic [`Conio`](src/conio.rs) type covering the
+  functional subset of `caca_conio_*` (screen control, cursor, `putch`/`cputs`/
+  `cprintf`, `getch`/`getche`/`getpass`, `kbhit`/`ungetch`, colours and delays).
 
 ## Display drivers
 
@@ -78,10 +83,10 @@ loop {
 ## Status
 
 The port covers the bulk of libcaca's public API (canvas, attributes, charset,
-primitives, transforms, frames, codecs, dithering, fonts, display and events).
-Not yet ported: FIGlet/TOIlet fonts (`figfont.c`), the `conio` compatibility
-layer, the plugin-based windowing drivers (X11/GL/cocoa/win32/VGA), and the
-`file`/`getopt` helpers that are unnecessary in idiomatic Rust.
+primitives, transforms, frames, codecs, dithering, bitmap fonts, FIGlet/TOIlet
+fonts, display/events and the DOS `conio` layer). Not yet ported: the
+plugin-based windowing drivers (X11/GL/cocoa/win32/VGA) and the `file`/`getopt`
+helpers that are unnecessary in idiomatic Rust.
 
 See `examples/` for runnable programs.
 

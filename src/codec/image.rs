@@ -2,8 +2,51 @@
 
 use crate::attr::Attr;
 use crate::canvas::{Canvas, CACA_MAGIC_FULLWIDTH};
+use crate::error::{CacaError, Result};
 
 use super::push_utf8;
+
+/// Export the canvas as an uncompressed 32-bit TGA image, rasterised with the
+/// first built-in bitmap font (like the C `export_tga`).
+pub(super) fn export_tga(cv: &Canvas) -> Result<Vec<u8>> {
+    let names = crate::font::font_list();
+    let name = names.first().ok_or(CacaError::Invalid)?;
+    let font = crate::font::load_builtin(name)?;
+
+    let w = cv.width() * font.width();
+    let h = cv.height() * font.height();
+    let pix_len = (w.max(0) * h.max(0) * 4) as usize;
+
+    let mut out = Vec::with_capacity(18 + pix_len);
+
+    // TGA header: 18 bytes.
+    out.push(0); // ID length
+    out.push(0); // colour map type
+    out.push(2); // image type: uncompressed truecolour
+    out.extend_from_slice(&[0u8; 5]); // colour map specification
+    out.extend_from_slice(&[0, 0]); // X origin
+    out.extend_from_slice(&[0, 0]); // Y origin
+    out.push((w & 0xff) as u8);
+    out.push(((w >> 8) & 0xff) as u8);
+    out.push((h & 0xff) as u8);
+    out.push(((h >> 8) & 0xff) as u8);
+    out.push(32); // pixel depth
+    out.push(40); // image descriptor
+
+    let mut pixels = vec![0u8; pix_len];
+    if w > 0 && h > 0 {
+        font.render_canvas(cv, &mut pixels, w, h, 4 * w)?;
+    }
+
+    // render_canvas writes ARGB; TGA expects BGRA.
+    for px in pixels.chunks_exact_mut(4) {
+        px.swap(0, 3);
+        px.swap(1, 2);
+    }
+
+    out.extend_from_slice(&pixels);
+    Ok(out)
+}
 
 pub(super) fn export_ps(cv: &Canvas) -> Vec<u8> {
     const PS_HEADER: &str = "%!\n\
