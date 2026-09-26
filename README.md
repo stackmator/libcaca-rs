@@ -49,6 +49,8 @@ assert_eq!(cv.get_char(2, 2), b'H' as u32);
 - **DOS `conio` layer** — an idiomatic [`Conio`](src/conio.rs) type covering the
   functional subset of `caca_conio_*` (screen control, cursor, `putch`/`cputs`/
   `cprintf`, `getch`/`getche`/`getpass`, `kbhit`/`ungetch`, colours and delays).
+- **Option parsing** — an idiomatic [`Getopt`](src/getopt.rs) port of
+  `caca_getopt`, handling short-option bundles and `--long[=arg]` options.
 
 ## Display drivers
 
@@ -88,10 +90,10 @@ loop {
 
 The port covers the bulk of libcaca's public API (canvas, attributes, charset,
 primitives, transforms, frames, codecs, dithering, bitmap fonts, FIGlet/TOIlet
-fonts, display/events, the Win32 console driver and the DOS `conio` layer).
-Not yet ported: the graphical window drivers (X11/GL/cocoa/VGA), the zlib-backed
-`caca_file_*` compressed I/O and the `caca_getopt` helper, all of which are
-either platform-specific or unnecessary in idiomatic Rust.
+fonts, display/events, the Win32 console driver, the DOS `conio` layer and option
+parsing). Not yet ported: the graphical window drivers (X11/GL/cocoa/VGA) and
+the zlib-backed `caca_file_*` compressed I/O, which are platform-specific or
+need an external compression dependency.
 
 See `examples/` for runnable programs.
 

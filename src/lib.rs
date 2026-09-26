@@ -35,6 +35,7 @@ pub mod error;
 pub mod figfont;
 pub mod font;
 pub mod frame;
+pub mod getopt;
 pub mod line;
 pub mod string;
 pub mod transform;
