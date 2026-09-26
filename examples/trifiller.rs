@@ -1,9 +1,10 @@
 //! Port of libcaca's `examples/trifiller.c`.
 //!
 //! Renders a rotating textured square with `fill_triangle_textured`. Keys:
-//! arrows move it, `a`/`s` rotate it, `q` or Escape quits. The texture is the
-//! generated colour ramp (the C version can alternatively dither an image
-//! file, which needs an image decoder this port does not ship).
+//! arrows move it, `a`/`s` rotate it, `q` or Escape quits. With no argument
+//! the texture is a generated colour ramp; with the `import` cargo feature,
+//! passing an image file dithers it into the texture like the C version's
+//! `load_image` path.
 
 use std::f32::consts::PI;
 
@@ -18,12 +19,30 @@ fn main() -> libcaca::Result<()> {
     let _ = dp.set_title("trifiller");
     dp.set_display_time(10_000)?;
 
-    for i in 0..16 {
-        tex.set_color_ansi(
-            Color::from_u8(((i + 1) % 0x0f) as u8).unwrap_or(Color::White),
-            Color::from_u8((i % 0x0f) as u8).unwrap_or(Color::Black),
-        )?;
-        tex.put_str(0, i, "0123456789ABCDEF");
+    #[cfg(feature = "import")]
+    if let Some(path) = std::env::args().nth(1) {
+        // `load_image(argv[1])` + the 5th dither algorithm ("random").
+        let mut im = libcaca::Image::load(&path).map_err(|_| {
+            eprintln!("trifiller: unable to load image '{path}'");
+            libcaca::CacaError::Invalid
+        })?;
+        im.set_algorithm("random")?;
+        im.dither_onto(&mut tex, 0, 0, 16, 16)?;
+    } else {
+        make_ramp(&mut tex)?;
+    }
+    #[cfg(not(feature = "import"))]
+    make_ramp(&mut tex)?;
+
+    fn make_ramp(tex: &mut Canvas) -> libcaca::Result<()> {
+        for i in 0..16 {
+            tex.set_color_ansi(
+                Color::from_u8(((i + 1) % 0x0f) as u8).unwrap_or(Color::White),
+                Color::from_u8((i % 0x0f) as u8).unwrap_or(Color::Black),
+            )?;
+            tex.put_str(0, i, "0123456789ABCDEF");
+        }
+        Ok(())
     }
 
     let square = [

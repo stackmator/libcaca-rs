@@ -45,6 +45,10 @@ x11 = ["std", "dep:x11rb"]
 # `compression` enables transparent gzip/ZIP decompression in the `file`
 # module (mirroring HAVE_ZLIB_H), backed by pure-Rust flate2 with no C code.
 compression = ["std", "dep:flate2"]
+# `import` enables image-file decoding in the `import` module (mirroring
+# common-image.c, whose Imlib2/BMP loading becomes the pure-Rust `image`
+# crate). Used by `trifiller` to dither a texture from a file.
+import = ["std", "dep:image"]
 
 [dependencies]
 winit = { version = "0.30", optional = true }
@@ -53,12 +57,13 @@ glutin = { version = "0.32", optional = true }
 glutin-winit = { version = "0.5", optional = true }
 glow = { version = "0.18", optional = true }
 raw-window-handle = { version = "0.6", optional = true }
+image = { version = "0.25", optional = true }
+flate2 = { version = "1", optional = true, default-features = false, features = ["rust_backend"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = { version = "0.6", optional = true }
 objc2-foundation = { version = "0.3", optional = true }
 objc2-app-kit = { version = "0.3", optional = true }
-flate2 = { version = "1", optional = true, default-features = false, features = ["rust_backend"] }
 
 [target.'cfg(unix)'.dependencies]
 libc = { version = "0.2", optional = true }
@@ -168,6 +173,14 @@ required-features = ["std"]
 [[example]]
 name = "snake"
 path = "examples/snake.rs"
+required-features = ["std"]
+[[example]]
+name = "conio-snake"
+path = "examples/conio_snake.rs"
+required-features = ["std"]
+[[example]]
+name = "dithering"
+path = "examples/dithering.rs"
 required-features = ["std"]
 [[example]]
 name = "connect4"

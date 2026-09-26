@@ -53,6 +53,8 @@ pub mod file;
 pub mod font;
 pub mod frame;
 pub mod getopt;
+#[cfg(feature = "import")]
+pub mod import;
 pub mod line;
 pub mod string;
 pub mod transform;
@@ -74,3 +76,5 @@ pub use figfont::FigFont;
 #[cfg(feature = "std")]
 pub use file::File;
 pub use font::Font;
+#[cfg(feature = "import")]
+pub use import::Image;

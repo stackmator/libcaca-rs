@@ -59,6 +59,10 @@ assert_eq!(cv.get_char(2, 2), b'H' as u32);
   (`compat` cargo feature, off by default) covering the deprecated `caca0`
   API: old event encoding, features, sprites, bitmaps, colours and the full
   old drawing vocabulary, so legacy programs port without rewriting.
+- **Image import** — an opt-in [`Image`](src/import.rs) type (`import`
+  cargo feature, off by default) decoding image files through the pure-Rust
+  `image` crate and dithering them with the `common-image.c` 32-bit RGBA
+  layout, so `trifiller` can texture from a file like the C version.
 - **VGA/DOS emulation** — opt-in `vga` and `dos` features porting the
   hardware drivers' logic as state (80x25 buffers, palette, cursor,
   press/release event synthesis). Physical screen/port/DOS access is
@@ -155,9 +159,10 @@ The port covers the bulk of libcaca's public API (canvas, attributes, charset,
 primitives, transforms, frames, codecs, dithering, bitmap fonts, FIGlet/TOIlet
 fonts, display/events, the Win32 console driver, `winit`, X11 and OpenGL
 graphical window drivers, the DOS `conio` layer, option parsing, file I/O with
-transparent decompression, the `compat` pre-1.0 shim and the VGA/DOS
-hardware logic (as emulation state). Not yet ported: the S-Lang/ncurses
-*bindings* (the `terminal` driver speaks the same ANSI protocol without C).
+transparent decompression, the `compat` pre-1.0 shim, the VGA/DOS
+hardware logic (as emulation state) and image-file import via the `image`
+crate. Not yet ported: the S-Lang/ncurses *bindings* (the `terminal` driver
+speaks the same ANSI protocol without C).
 
 Runnable programs live in `examples/`: `hello` (animated terminal demo),
 `transform` (a port of libcaca's sprite/transform demo), `event` (a port of
@@ -177,9 +182,13 @@ dithering under a moving mask), `mouse` (mouse tracking and buttons),
 (the flagship animated menu: dots, lines, boxes, triangles, ellipses and a
 dithered render), `import` (file viewer), `spritedit` (multi-frame sprite
 round-trip), `input` (Unicode text-entry editor), `swallow` (a multiplexer
-tiling four child `caca` streams), `snake` (the conio snake game), `connect4`
-(the conio Connect-4 AI) and `gui`
-(the graphical window demo, needs `--features gui`).
+tiling four child `caca` streams), `snake` (the conio snake game),
+`conio-snake` (its C++ duplicate, written against `Conio`), `connect4`
+(the conio Connect-4 AI), `dithering` (the fuzzy-Voronoi dither test),
+`demo0` (the 0.9-era `demo` twin on the old API, needs `--features compat`)
+and `gui`
+(the graphical window demo, needs `--features gui`). `trifiller` dithers an
+image file into its texture when built with `--features import`.
 Unit tests live alongside the modules; `tests/canvas_api.rs` ports the C API
 stress test. Set `CACA_DRIVER=null` to run the examples headlessly.
 
