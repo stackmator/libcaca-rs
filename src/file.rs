@@ -24,9 +24,9 @@
 //! ```
 
 use std::fs;
-use std::io::Write;
 #[cfg(feature = "compression")]
 use std::io::Read;
+use std::io::Write;
 use std::path::Path;
 
 use crate::error::{CacaError, Result};

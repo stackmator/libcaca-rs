@@ -93,8 +93,7 @@ impl X11 {
         // Clamp the canvas like the C version, then resize below.
         let _ = canvas.set_size(width, height);
         let (font, reply) = Self::load_font(&conn)?;
-        let (font_width, font_height, font_offset, max_char) =
-            Self::font_metrics(&reply, &font.1);
+        let (font_width, font_height, font_offset, max_char) = Self::font_metrics(&reply, &font.1);
 
         let setup = conn.setup();
         let screen = &setup.roots[screen_num];
@@ -111,11 +110,12 @@ impl X11 {
             let r = ((i & 0xf00) >> 8) * 0x1111;
             let g = ((i & 0x0f0) >> 4) * 0x1111;
             let b = (i & 0x00f) * 0x1111;
-            *slot = x11rb::protocol::xproto::alloc_color(&conn, colormap, r as u16, g as u16, b as u16)
-                .ok()
-                .and_then(|c| c.reply().ok())
-                .map(|r| r.pixel)
-                .unwrap_or(0);
+            *slot =
+                x11rb::protocol::xproto::alloc_color(&conn, colormap, r as u16, g as u16, b as u16)
+                    .ok()
+                    .and_then(|c| c.reply().ok())
+                    .map(|r| r.pixel)
+                    .unwrap_or(0);
         }
 
         let wid = conn.generate_id().map_err(|_| CacaError::Invalid)?;
@@ -284,8 +284,7 @@ impl X11 {
                 Ok(cookie) => match cookie.reply() {
                     Ok(reply) => return Ok(((fid, name), reply)),
                     Err(_) => {
-                        let _ =
-                            x11rb::protocol::xproto::close_font(conn, fid);
+                        let _ = x11rb::protocol::xproto::close_font(conn, fid);
                         last_err = CacaError::Invalid;
                     }
                 },
@@ -306,8 +305,7 @@ impl X11 {
         } else {
             0x7f
         };
-        let font_max =
-            ((reply.max_byte1 as u32) << 8) | reply.max_char_or_byte2 as u32;
+        let font_max = ((reply.max_byte1 as u32) << 8) | reply.max_char_or_byte2 as u32;
         if font_max != 0 && font_max < max_char {
             max_char = font_max;
         }
@@ -319,8 +317,8 @@ impl X11 {
             && reply.max_char_or_byte2 >= 0x7e
         {
             for i in 0x21u16..0x7f {
-                let cw = reply.char_infos[(i - reply.min_char_or_byte2) as usize]
-                    .character_width as i32;
+                let cw =
+                    reply.char_infos[(i - reply.min_char_or_byte2) as usize].character_width as i32;
                 if cw > font_width {
                     font_width = cw;
                 }
@@ -329,8 +327,7 @@ impl X11 {
         if font_width == 0 {
             font_width = reply.max_bounds.character_width as i32;
         }
-        let font_height =
-            reply.max_bounds.ascent as i32 + reply.max_bounds.descent as i32;
+        let font_height = reply.max_bounds.ascent as i32 + reply.max_bounds.descent as i32;
         let font_offset = reply.max_bounds.descent as i32;
 
         (font_width.max(1), font_height.max(1), font_offset, max_char)
@@ -437,13 +434,10 @@ impl X11 {
             while y < dy + dh {
                 let mut x = dx;
                 while x < dx + dw {
-                    let bg =
-                        Attr::from_raw(attrs[(x + y * width) as usize]).to_rgb12_bg();
+                    let bg = Attr::from_raw(attrs[(x + y * width) as usize]).to_rgb12_bg();
                     let mut len = 1;
                     while x + len < dx + dw
-                        && Attr::from_raw(attrs[(x + len + y * width) as usize])
-                            .to_rgb12_bg()
-                            == bg
+                        && Attr::from_raw(attrs[(x + len + y * width) as usize]).to_rgb12_bg() == bg
                     {
                         len += 1;
                     }
@@ -462,15 +456,7 @@ impl X11 {
                     self.set_foreground(
                         self.colors[Attr::from_raw(attrs[idx]).to_rgb12_fg() as usize & 0xfff],
                     );
-                    self.put_glyph(
-                        x * fw,
-                        y * fh,
-                        yoff,
-                        fw,
-                        fh,
-                        attrs[idx],
-                        chars[idx],
-                    );
+                    self.put_glyph(x * fw, y * fh, yoff, fw, fh, attrs[idx], chars[idx]);
                 }
             }
         }
@@ -594,12 +580,8 @@ impl X11 {
                     angle2: 64 * 360,
                 };
                 if ch == 0x25cb {
-                    let _ = x11rb::protocol::xproto::poly_arc(
-                        &self.conn,
-                        self.pixmap,
-                        self.gc,
-                        &[arc],
-                    );
+                    let _ =
+                        x11rb::protocol::xproto::poly_arc(&self.conn, self.pixmap, self.gc, &[arc]);
                 } else {
                     let _ = x11rb::protocol::xproto::poly_fill_arc(
                         &self.conn,
@@ -734,12 +716,7 @@ impl X11 {
     }
 
     /// Poll X events until the deadline, returning the first match.
-    pub fn get_event(
-        &mut self,
-        canvas: &Canvas,
-        mask: CacaMask,
-        timeout_us: i64,
-    ) -> Option<Event> {
+    pub fn get_event(&mut self, canvas: &Canvas, mask: CacaMask, timeout_us: i64) -> Option<Event> {
         if mask.bits() == 0 || !self.active {
             return None;
         }
@@ -825,15 +802,10 @@ impl X11 {
                 y: self.mouse.1,
                 button: ev.detail as i32,
             }),
-            XEvent::KeyPress(ev) => {
-                self.map_key(ev.detail, u16::from(ev.state), true)
-            }
-            XEvent::KeyRelease(ev) => {
-                self.map_key(ev.detail, u16::from(ev.state), false)
-            }
+            XEvent::KeyPress(ev) => self.map_key(ev.detail, u16::from(ev.state), true),
+            XEvent::KeyRelease(ev) => self.map_key(ev.detail, u16::from(ev.state), false),
             XEvent::ClientMessage(ev) => {
-                if ev.type_ == self.wm_protocols
-                    && ev.data.as_data32()[0] == self.wm_delete_window
+                if ev.type_ == self.wm_protocols && ev.data.as_data32()[0] == self.wm_delete_window
                 {
                     Some(Event::Quit)
                 } else {
