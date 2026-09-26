@@ -164,6 +164,13 @@ hardware logic (as emulation state) and image-file import via the `image`
 crate. Not yet ported: the S-Lang/ncurses *bindings* (the `terminal` driver
 speaks the same ANSI protocol without C).
 
+No language bindings are provided — deliberately. The C tree ships
+`python/`, `php/`, `caca-sharp/` and `java/` shims, but those bind the C
+ABI, and this crate has none: it is pure Rust with an idiomatic safe API,
+not a shared library. Other languages should use their Rust FFI tooling
+(PyO3, napi-rs, JNI, P/Invoke over a thin `cdylib` wrapper, etc.) against
+this crate instead of expecting pre-made bindings here.
+
 Runnable programs live in `examples/`: `hello` (animated terminal demo),
 `transform` (a port of libcaca's sprite/transform demo), `event` (a port of
 the event lister; type "quit" to exit), `export` (a port of the codec demo
