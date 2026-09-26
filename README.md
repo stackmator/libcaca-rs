@@ -125,9 +125,11 @@ and dithers it back for display), `colors` (the 16x16 colour-pair chart),
 `driver` (the driver list with live switching), `gamma` (gamma-corrected
 dithering under a moving mask), `mouse` (mouse tracking and buttons),
 `figfont` (`figfont <font.flf> <text>`, rendering FIGlet fonts to UTF-8),
-`unicode` (Unicode text, gradient blocks and double-width glyphs) and `demo`
+`unicode` (Unicode text, gradient blocks and double-width glyphs), `demo`
 (the flagship animated menu: dots, lines, boxes, triangles, ellipses and a
-dithered render).
+dithered render), `import` (file viewer), `spritedit` (multi-frame sprite
+round-trip), `input` (Unicode text-entry editor) and `swallow` (a multiplexer
+tiling four child `caca` streams).
 Unit tests live alongside the modules; `tests/canvas_api.rs` ports the C API
 stress test. Set `CACA_DRIVER=null` to run the examples headlessly.
 

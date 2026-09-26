@@ -112,3 +112,15 @@ required-features = ["std"]
 name = "demo"
 path = "examples/demo.rs"
 required-features = ["std"]
+[[example]]
+name = "import"
+path = "examples/import.rs"
+required-features = ["std"]
+[[example]]
+name = "input"
+path = "examples/input.rs"
+required-features = ["std"]
+[[example]]
+name = "swallow"
+path = "examples/swallow.rs"
+required-features = ["std"]
