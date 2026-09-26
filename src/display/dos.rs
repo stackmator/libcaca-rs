@@ -133,7 +133,19 @@ impl Dos {
         Err(CacaError::NotImplemented)
     }
 
+    /// Report the window size. The C version knows nothing about its
+    /// window, so this is always the canvas size.
+    pub fn handle_resize(canvas: &Canvas) -> (i32, i32) {
+        (canvas.width(), canvas.height())
+    }
+
     /// Poll for input with press/release synthesis.
+    ///
+    /// One deviation: the C version reports raw `getch()` bytes (a byte
+    /// above 0x7f arrives as-is, extended keys as separate 0x00/0xE0
+    /// presses). Here bytes flow through the shared ANSI/UTF-8 parser, so
+    /// plain ASCII is identical but high bytes decode to Unicode presses
+    /// and escape sequences to special keys.
     pub fn get_event(&mut self, mask: EventMask, timeout_us: i64) -> Option<Event> {
         if mask.bits() == 0 || !self.active {
             return None;
@@ -254,5 +266,11 @@ mod tests {
         // Fullwidth glyph becomes "[ ]"-style markers like VGA.
         assert_eq!(buf[4], b'[');
         assert_eq!(buf[6], b']');
+    }
+
+    #[test]
+    fn resize_reports_canvas_size() {
+        let cv = Canvas::new(40, 10).unwrap();
+        assert_eq!(Dos::handle_resize(&cv), (40, 10));
     }
 }

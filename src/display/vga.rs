@@ -46,6 +46,12 @@ pub const VGA_PALETTE: [(u8, u8, u8, u8); 16] = [
 ///
 /// This is the `vga_display` loop: a fullwidth glyph occupies two cells
 /// rendered as `[` and `]`.
+///
+/// One deliberate fix: the C version advances the destination with
+/// `screen += dy * width + dx` (bytes, missing the `× 2` for the
+/// char/attribute pairs) and only strides correctly per row, so partial
+/// rects away from the origin land at the wrong offset. The buffer index
+/// here uses the intended `(dx + dy * width) * 2`.
 pub(crate) fn blit_buffer(buf: &mut [u8], width: i32, canvas: &Canvas) {
     let chars = canvas.chars();
     let attrs = canvas.attrs();
@@ -133,6 +139,12 @@ impl Vga {
         Err(CacaError::NotImplemented)
     }
 
+    /// Report the window size. The C version knows nothing about its
+    /// window, so this is always the canvas size.
+    pub fn handle_resize(canvas: &Canvas) -> (i32, i32) {
+        (canvas.width(), canvas.height())
+    }
+
     /// The C version always reports no events (`FIXME`).
     pub fn get_event(&mut self, _mask: EventMask, _timeout_us: i64) -> Option<Event> {
         None
@@ -155,6 +167,12 @@ impl Vga {
     /// Whether the emulated cursor is currently visible.
     pub fn cursor_visible(&self) -> bool {
         self.cursor_visible
+    }
+}
+
+impl Drop for Vga {
+    fn drop(&mut self) {
+        self.end();
     }
 }
 
@@ -219,5 +237,11 @@ mod tests {
         vga.end();
         assert!(vga.cursor_visible());
         assert!(vga.set_title("x").is_err());
+    }
+
+    #[test]
+    fn resize_reports_canvas_size() {
+        let cv = Canvas::new(40, 10).unwrap();
+        assert_eq!(Vga::handle_resize(&cv), (40, 10));
     }
 }
