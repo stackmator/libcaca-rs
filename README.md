@@ -103,9 +103,12 @@ that renders the classic showcase canvas and exports it, e.g.
 square demo; arrows move, `a`/`s` rotate, `q` quits), `font2tga` (renders every
 glyph of the built-in font to a TGA image), `font` (renders text to ARGB
 and dithers it back for display), `colors` (the 16x16 colour-pair chart),
-`truecolor` (an ARGB gradient), `text` (mirrored ASCII-art import/export) and
-`blit` (a handle-centred sprite). Set `CACA_DRIVER=null` to run them
-headlessly.
+`truecolor` (an ARGB gradient), `text` (mirrored ASCII-art import/export),
+`blit` (a handle-centred sprite), `frames` (a 200-frame animation),
+`fullwidth` (fullwidth glyph handling), `hsv` (a dithered HSV gradient) and
+`driver` (the driver list with live switching). Unit tests live alongside the
+modules; `tests/canvas_api.rs` ports the C API stress test. Set
+`CACA_DRIVER=null` to run the examples headlessly.
 
 ## License
 
