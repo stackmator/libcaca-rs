@@ -255,3 +255,18 @@ required-features = ["gui"]
 name = "canvas"
 path = "examples/canvas.rs"
 required-features = ["std"]
+
+# Display-dependent integration tests; skipped without `std` so
+# `--no-default-features --all-targets` (CI no_std job) keeps working.
+[[test]]
+name = "bench"
+path = "tests/bench.rs"
+required-features = ["std"]
+[[test]]
+name = "driver"
+path = "tests/driver.rs"
+required-features = ["std"]
+[[test]]
+name = "setlocale"
+path = "tests/setlocale.rs"
+required-features = ["std"]
