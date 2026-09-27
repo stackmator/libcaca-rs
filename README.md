@@ -1,9 +1,8 @@
 # libcaca-rs
 
-> **⚠️ Work in progress — API is maturing.** The full libcaca feature set is
-> ported (see [Status](#status)), including the C examples, tests and tools,
-> but the API is idiomatic Rust rather than a drop-in C replacement, so
-> expect breaking changes before 1.0.
+> **Feature-complete port.** The full libcaca feature set is ported
+> (see [Status](#status)), including the C examples, tests and tools.
+> The API is idiomatic Rust rather than a drop-in C replacement.
 
 A **pure-Rust port of [libcaca]**, the Colour ASCII-Art library. This is *not* a
 binding or wrapper: no C code is linked, and the public API is idiomatic safe
