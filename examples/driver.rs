@@ -11,7 +11,10 @@ fn main() -> libcaca::Result<()> {
     let mut dp = Display::create()?;
     dp.canvas_mut().set_color_ansi(Color::White, Color::Black)?;
 
-    let interactive = matches!(dp.driver(), Driver::Terminal | Driver::Win32);
+    let interactive = matches!(
+        dp.driver(),
+        Driver::Terminal | Driver::Ncurses | Driver::Slang | Driver::Win32
+    );
 
     let mut cur = 0usize;
     for (i, (name, _)) in DRIVER_LIST.iter().enumerate() {

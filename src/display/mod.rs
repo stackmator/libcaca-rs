@@ -7,6 +7,8 @@
 //! - `null` — does nothing (useful for tests / headless rendering)
 //! - `raw` — writes the native `caca` binary format to stdout
 //! - `terminal` — ANSI/VT terminal driver with raw-mode input
+//! - `ncurses` — alias of `terminal` using the ncurses-compatible name
+//! - `slang` — alias of `terminal` using the S-Lang-compatible name
 
 #[cfg(all(feature = "cocoa", target_os = "macos"))]
 mod cocoa;
@@ -17,7 +19,11 @@ pub mod event;
 mod gl;
 #[cfg(feature = "std")]
 mod input;
+#[cfg(feature = "std")]
+pub mod ncurses;
 pub mod render;
+#[cfg(feature = "std")]
+pub mod slang;
 #[cfg(feature = "std")]
 mod terminal;
 #[cfg(feature = "vga")]
@@ -61,6 +67,8 @@ pub const DRIVER_LIST: &[(&str, &str)] = &[
     #[cfg(windows)]
     ("win32", "Windows console"),
     ("terminal", "ANSI terminal"),
+    ("ncurses", "ANSI terminal (ncurses-compatible)"),
+    ("slang", "ANSI terminal (S-Lang-compatible)"),
     ("raw", "raw libcaca output"),
     ("null", "null driver"),
 ];
@@ -74,6 +82,8 @@ pub enum Driver {
     Null,
     Raw,
     Terminal,
+    Ncurses,
+    Slang,
     Win32,
     Winit,
     X11,
@@ -89,6 +99,8 @@ impl Driver {
             Driver::Null => "null",
             Driver::Raw => "raw",
             Driver::Terminal => "terminal",
+            Driver::Ncurses => "ncurses",
+            Driver::Slang => "slang",
             Driver::Win32 => "win32",
             Driver::Winit => "winit",
             Driver::Gl => "gl",
@@ -103,6 +115,11 @@ impl Driver {
             "null" => Some(Driver::Null),
             "raw" => Some(Driver::Raw),
             "terminal" | "ansi" => Some(Driver::Terminal),
+            // Pure-Rust port: ncurses/S-Lang share the ANSI/VT backend
+            // (see `ncurses.rs` / `slang.rs`); the C libraries have no
+            // C-free equivalent, but the terminal protocol is identical.
+            "ncurses" | "curses" => Some(Driver::Ncurses),
+            "slang" => Some(Driver::Slang),
             "win32" => {
                 #[cfg(windows)]
                 {
@@ -712,7 +729,7 @@ fn install_backend(canvas: &mut Canvas, driver: Driver) -> Result<Backend> {
             }
             Backend::Raw
         }
-        Driver::Terminal => {
+        Driver::Terminal | Driver::Ncurses | Driver::Slang => {
             let mut term = terminal::Terminal::new().map_err(|_| CacaError::Invalid)?;
             term.init();
             // Match the canvas size to the terminal like ncurses does.
@@ -811,5 +828,19 @@ mod tests {
         let mut dp = Display::with_driver(cv, Some("null")).unwrap();
         dp.set_driver("raw").unwrap();
         assert_eq!(dp.driver_name(), "raw");
+    }
+
+    #[test]
+    fn ncurses_slang_resolve_to_terminal_backend() {
+        // Port note: the C drivers need libncurses/libslang; here both
+        // names resolve to distinct `Driver` identities sharing the
+        // ANSI/VT backend, so headless code paths stay identical.
+        assert_eq!(Driver::from_name("ncurses"), Some(Driver::Ncurses));
+        assert_eq!(Driver::from_name("curses"), Some(Driver::Ncurses));
+        assert_eq!(Driver::from_name("slang"), Some(Driver::Slang));
+        assert_eq!(Driver::Ncurses.name(), "ncurses");
+        assert_eq!(Driver::Slang.name(), "slang");
+        assert!(DRIVER_LIST.iter().any(|(n, _)| *n == "ncurses"));
+        assert!(DRIVER_LIST.iter().any(|(n, _)| *n == "slang"));
     }
 }

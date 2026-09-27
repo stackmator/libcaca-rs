@@ -54,6 +54,21 @@ name = "cacaserver"
 path = "src/bin/cacaserver.rs"
 required-features = ["std"]
 
+[[bin]]
+name = "makefont"
+path = "src/bin/makefont.rs"
+required-features = ["std"]
+
+[[bin]]
+name = "optipal"
+path = "src/bin/optipal.rs"
+required-features = ["std"]
+
+[[bin]]
+name = "sortchars"
+path = "src/bin/sortchars.rs"
+required-features = ["std"]
+
 [features]
 default = ["std"]
 # `std` enables the OS-interactive layer: display drivers (terminal, win32),
@@ -236,3 +251,7 @@ required-features = ["std"]
 name = "gui"
 path = "examples/gui.rs"
 required-features = ["gui"]
+[[example]]
+name = "canvas"
+path = "examples/canvas.rs"
+required-features = ["std"]

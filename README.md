@@ -1,9 +1,9 @@
 # libcaca-rs
 
-> **⚠️ Work in progress — this port is NOT finished.** It covers a large part of
-> libcaca, but several subsystems are missing or only partially implemented (see
-> [Status](#status)). It is not yet feature-complete nor a drop-in replacement
-> for the original library. Expect breaking changes.
+> **⚠️ Work in progress — API is maturing.** The full libcaca feature set is
+> ported (see [Status](#status)), including the C examples, tests and tools,
+> but the API is idiomatic Rust rather than a drop-in C replacement, so
+> expect breaking changes before 1.0.
 
 A **pure-Rust port of [libcaca]**, the Colour ASCII-Art library. This is *not* a
 binding or wrapper: no C code is linked, and the public API is idiomatic safe
@@ -44,7 +44,8 @@ assert_eq!(cv.get_char(2, 2), b'H' as u32);
 - **FIGfonts** — load FIGlet/TOIlet `.flf`/`.tlf` fonts with all horizontal
   smushing rules, kern/smush/overlap modes, wrapping and hardblank handling.
 - **Display & events** — display contexts with `null`, `raw` (native binary to
-  stdout) and `terminal` (ANSI/VT) drivers; raw-mode input and an event parser
+  stdout), `terminal` (ANSI/VT) and the `ncurses`/`slang`-named aliases over
+  the same ANSI backend; raw-mode input and an event parser
   for keys, mouse (SGR) and resize.
 - **DOS `conio` layer** — an idiomatic [`Conio`](src/conio.rs) type covering the
   functional subset of `caca_conio_*` (screen control, cursor, `putch`/`cputs`/
@@ -79,6 +80,8 @@ assert_eq!(cv.get_char(2, 2), b'H' as u32);
 | `x11`      | X11 window (`x11` feature, Unix only)               |
 | `win32`    | native Win32 console (Unicode, mouse) — Windows only |
 | `terminal` | ANSI/VT terminal with raw-mode input and resize     |
+| `ncurses`  | ANSI/VT terminal under the ncurses-compatible name  |
+| `slang`    | ANSI/VT terminal under the S-Lang-compatible name   |
 | `raw`      | writes the native `caca` binary stream to stdout     |
 | `null`     | no output (headless rendering / tests)              |
 
@@ -155,14 +158,20 @@ cargo test --no-default-features
 
 ## Status
 
-The port covers the bulk of libcaca's public API (canvas, attributes, charset,
-primitives, transforms, frames, codecs, dithering, bitmap fonts, FIGlet/TOIlet
-fonts, display/events, the Win32 console driver, `winit`, X11 and OpenGL
-graphical window drivers, the DOS `conio` layer, option parsing, file I/O with
-transparent decompression, the `compat` pre-1.0 shim, the VGA/DOS
-hardware logic (as emulation state) and image-file import via the `image`
-crate. Not yet ported: the S-Lang/ncurses *bindings* (the `terminal` driver
-speaks the same ANSI protocol without C).
+The port covers the whole of libcaca's public API and tooling (canvas,
+attributes, charset, primitives, transforms, frames, codecs, dithering,
+bitmap fonts, FIGlet/TOIlet fonts, display/events including the
+`ncurses`/`slang` driver names over the shared ANSI/VT backend, the Win32
+console driver, `winit`, X11, OpenGL and Cocoa graphical window drivers,
+the DOS `conio` layer, option parsing, file I/O with transparent
+decompression, the `compat` pre-1.0 shim, the VGA/DOS hardware logic (as
+emulation state), image-file import via the `image` crate, the
+`makefont`/`optipal`/`sortchars` font tools and every C example and test
+program). The C `ncurses`/`slang` drivers need their C libraries, so here
+those names resolve to the same ANSI protocol the `terminal` driver speaks
+— no C involved (see `src/display/ncurses.rs`, `src/display/slang.rs`).
+Likewise `makefont` re-emits the embedded fonts instead of rasterising
+through Pango/FreeType.
 
 No language bindings are provided — deliberately. The C tree ships
 `python/`, `php/`, `caca-sharp/` and `java/` shims, but those bind the C
@@ -172,6 +181,7 @@ not a shared library. Other languages should use their Rust FFI tooling
 this crate instead of expecting pre-made bindings here.
 
 Runnable programs live in `examples/`: `hello` (animated terminal demo),
+`canvas` (the full-API stress test),
 `transform` (a port of libcaca's sprite/transform demo), `event` (a port of
 the event lister; type "quit" to exit), `export` (a port of the codec demo
 that renders the classic showcase canvas and exports it, e.g.
@@ -200,9 +210,16 @@ image file into its texture when built with `--features import`.
 Two real command-line tools ship as binaries (both need
 `--features import`): `img2txt` (convert an image to text, e.g.
 `img2txt -W 80 -f ansi ./caca.png`) and `cacaview` (interactive terminal
-image viewer with zoom, gamma, playlist and help).
+image viewer with zoom, gamma, playlist and help). Three font-build tools
+ship as binaries (need `std`): `makefont` (re-emit an embedded font as a C
+header, e.g. `makefont monospace9 "Monospace 9" 96 4`), `optipal` (print
+the S-Lang 128-pair palette tables) and `sortchars` (print the
+`cells_to_ascii`/`ascii_to_cells` tables plus the test-circle example).
 Unit tests live alongside the modules; `tests/canvas_api.rs` ports the C API
-stress test. Set `CACA_DRIVER=null` to run the examples headlessly.
+stress test, `tests/canvas_cpp.rs` ports the `canvas.cpp` CppUnit suite,
+`tests/driver.rs` ports `driver.cpp`, `tests/setlocale.rs` ports
+`bug-setlocale.c` and `tests/bench.rs` ports `bench.c` (scaled down). Set
+`CACA_DRIVER=null` to run the examples headlessly.
 
 ## License
 
